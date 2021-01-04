@@ -37,3 +37,89 @@ public:
  * vector<int> param_2 = obj->shuffle();
  */
 ```
+
+### 155. 最小栈
+
+- 问题：复现栈的基本功能，并能取得当前栈的最小值
+- 额外使用一个辅助栈**记录每步的最小值**，空间复杂度为O(n)，时间复杂度同样为O(n)
+
+```
+class MinStack {
+    stack<int> x_stack;
+    stack<int> min_stack;
+public:
+    /** initialize your data structure here. */
+    MinStack() {
+        min_stack.push(INT_MAX);
+    }
+    
+    void push(int x) {
+        x_stack.push(x);
+        min_stack.push(min(min_stack.top(),x));
+    }
+    
+    void pop() {
+        x_stack.pop();
+        min_stack.pop();
+    }
+    
+    int top() {
+        return x_stack.top();
+    }
+    
+    int getMin() {
+        return min_stack.top();
+    }
+};
+
+```
+- 优化：把空间复杂度降低到O(1)
+- 在stack中直接存储元素差值
+
+```
+class MinStack {
+    stack<long> x_stack;
+    long min_value;
+public:
+    /** initialize your data structure here. */
+    MinStack() {
+        min_value=0;
+        
+    }
+    
+    void push(int x) {
+        if(x_stack.empty()){
+            min_value=x;
+            x_stack.push(0);
+        }
+        else{
+            long diff=x-min_value;
+            if(diff<0){
+                x_stack.push(diff);
+                min_value=x;
+            }
+            else{
+                x_stack.push(diff);
+            }
+
+        }
+        
+    }
+    
+    void pop() {
+        long diff=x_stack.top();
+        x_stack.pop();
+        min_value=diff<0?min_value-diff:min_value;
+        //return diff<0?min_value:min_value+diff;
+    }
+    int top() {
+        long diff=x_stack.top();
+        return diff<0?min_value:min_value+diff;
+        //return x_stack.top();
+    }
+    
+    int getMin() {
+        return min_value;
+    }
+};
+```
