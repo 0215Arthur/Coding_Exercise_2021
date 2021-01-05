@@ -123,3 +123,135 @@ public:
     }
 };
 ```
+
+### 412. Fizz Buzz
+- 简单题，普通的条件判断即可完成
+- 当目标值增多时，需要写比较多的条件判断，这时需要进行简单优化，省去大量条件判断语句
+
+- 基本写法： 三次判断
+```class Solution {
+public:
+    vector<string> fizzBuzz(int n) {
+        vector<string> res;
+        for(int i=1;i<=n;i++){
+            if(i%3==0 && i%5==0){
+                res.push_back("FizzBuzz");
+            }
+            else if(i%3==0){
+                res.push_back("Fizz");
+            }
+            else if(i%5==0){
+                res.push_back("Buzz");
+            }
+            else{
+                res.push_back(to_string(i));
+            }
+        }
+        return res;
+   }
+};
+```
+
+- 优化写法：**利用字符串来记录整除的结果，总共只需两次条件判断**： 提前将映射存在map中，先对关键值进行计算，得到判断结果
+
+```class Solution {
+public:
+    vector<string> fizzBuzz(int n) {
+        vector<string> res;
+        map<int, string> fizzBuzzDict = {
+            {3, "Fizz"},
+            {5, "Buzz"} 
+        };
+        
+        for(int i=1;i<=n;i++){
+            string tmp="";
+            for(auto key:fizzBuzzDict){
+                if(i%key.first==0){
+                    tmp+=key.second;
+                }
+ 
+            }
+            if(tmp==""){
+                tmp+=to_string(i);
+            }
+            res.push_back(tmp);
+        }
+        return res;
+    }
+};
+```
+
+### 204. 计算质数
+https://blog.csdn.net/yangxjsun/article/details/80201735
+- 计算小于正整数n的质数数量
+- 试除法：需要进行优化： 
+    - 只对奇数进行判断
+    - 对奇数x判断时：只尝试**除以从 3 到√x 的所有奇数**
+    - 进一步优化到只要尝试**小于√x 的质数**即可
+    - 时间复杂度：$O(n/2 log\sqrt{n})$,空间复杂度O(log\sqrt{n})
+    - 根据素数范围公式：小于x的质数有$x/ln(x)$个
+
+```class Solution {
+vector<int> primes;
+public:
+    bool check(int n){
+        if(primes.empty()){
+            if(n>=2){
+                if (n>2) primes.push_back(n);
+                return true;
+            }
+            return false;
+        }
+        int i=0;
+        //cout<<n<<endl;
+        while((primes[i]*primes[i])<=n){
+            //cout<<primes[i]<<endl;
+            if(n%primes[i++]==0) return false;
+        }
+        primes.push_back(n);
+        //cout<<n<<endl;
+        return true;
+       
+    }
+    int countPrimes(int n) {
+        int res=0;
+        if(n<=2) return 0;
+        for(int i=2;i<n;i++){
+            if(i==2) {
+                res=1;
+            }
+            else{
+                if(i%2){
+                res=check(i)?res+1:res;
+                }
+            }
+        }
+        return res;
+    }
+};
+```
+- 筛选法: 厄拉多塞筛法，简称埃氏筛
+从小到大遍历到数 xx 时，倘若它是合数，则它一定是某个小于 xx 的质数 yy 的整数倍，故根据此方法的步骤，我们在遍历到 yy 时，就一定会在此时将 xx 标记为 \textit{isPrime}[x]=0isPrime[x]=0。因此，这种方法也不会将合数标记为质数。
+
+当然这里还可以继续优化，对于一个质数 xx，如果按上文说的我们从 2x2x 开始标记其实是冗余的，应该直接从 x\cdot xx⋅x 开始标记，因为 2x,3x,\ldots2x,3x,… 这些数一定在 xx 之前就被其他数的倍数标记过了，例如 22 的所有倍数，33 的所有倍数等
+
+```class Solution {
+public:
+    int countPrimes(int n) {
+        vector<int> isPrime(n, 1);
+        int ans = 0;
+        for (int i = 2; i < n; ++i) {
+            if (isPrime[i]) {
+                ans += 1;
+                if ((long long)i * i < n) {
+                    for (int j = i * i; j < n; j += i) {
+                        isPrime[j] = 0;
+                    }
+                }
+            }
+        }
+        return ans;
+    }
+};
+ 
+```
