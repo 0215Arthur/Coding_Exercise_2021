@@ -255,3 +255,65 @@ public:
 };
  
 ```
+
+### 326. 3的幂数
+
+- 循环除法： 时间复杂度O(log3n) 空间复杂度O(1)
+```class Solution {
+public:
+    bool isPowerOfThree(int n) {
+
+        bool res=false;
+        while(n%3==0 && n>0){
+            n/=3;
+        }
+        if(n==1) res=true;
+        return res; 
+    }
+};
+```
+
+- 截断法： 计算2^31 int型的最大范围内的幂数值： 3^19
+- 空间复杂度O(1) 时间复杂度O(1)
+```class Solution {
+public:
+    bool isPowerOfThree(int n) {
+
+        bool res=false;
+        // 3^19 = 1162261467 
+        const int large=1162261467 ;
+        return (n>0)&&(large%n==0);
+    }
+};
+```
+
+### 13. 罗马数字转整数
+
+```class Solution {
+map<char,int> dict;
+public:
+    int romanToInt(string s) {
+        dict['I']=1;
+        dict['V']=5;
+        dict['X']=10;
+        dict['L']=50;
+        dict['C']=100;
+        dict['D']=500;
+        dict['M']=1000;
+        int res=0;
+        if (s.empty()) return res;
+        for(int i=0;i<s.length()-1;i++){
+            if(dict[s[i]]<dict[s[i+1]]){
+                res-=dict[s[i]];
+            }
+            else{
+                res+=dict[s[i]];
+            }
+        }
+        res+=dict[s[s.length()-1]];
+        return res;
+
+    }
+};
+
+```
