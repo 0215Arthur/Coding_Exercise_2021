@@ -317,3 +317,39 @@ public:
 };
 
 ```
+
+
+### 181. 位1的个数
+
+- 通过位运算来统计1的个数，通过与&运算来统计每个位数是否为1
+    - 时间复杂度分析： 位数有32的限制，因此时间复杂度在O(1)
+
+```class Solution {
+public:
+    int hammingWeight(uint32_t n) {
+        int count=0;
+        int mask=1;
+        while(n!=0){
+            if (mask&n) count++;
+            n>>=1;
+        }
+        return count;    
+    }
+};
+```
+
+- 进一步优化： 官方思考
+    - 通过n与(n-1)的与运算
+    - 能够减少循环次数
+```class Solution {
+public:
+    int hammingWeight(uint32_t n) {
+        int count=0;
+        while(n!=0){
+            count++;
+            n&=(n-1);
+        }   
+        return count;
+    }
+};
+```
