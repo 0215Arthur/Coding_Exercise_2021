@@ -338,7 +338,7 @@ public:
 };
 ```
 
-- 进一步优化： 官方思考
+- 进一步优化： 官方思路(布赖恩·克尼根位计数算法)
     - 通过n与(n-1)的与运算
     - 能够减少循环次数
 ```class Solution {
@@ -350,6 +350,30 @@ public:
             n&=(n-1);
         }   
         return count;
+    }
+};
+```
+
+### 444. 汉明距离计算
+- 计算汉明距离：两个数字的二进制表示有多少位不同
+- 通过XOR异或计算得到差异位，计算有多少个1即可
+- 可以用上上面题中计算位1的算法
+```class Solution {
+public:
+    int hammingDistance(int x, int y) {
+        int target=x^y;
+        //cout<<target<<endl;
+        if(target<1)
+            return 0;
+
+        int count=0;
+        while(target){
+            if(target&1) count++;
+            target>>=1;
+            //count++;
+        }
+        
+        return  count;
     }
 };
 ```
