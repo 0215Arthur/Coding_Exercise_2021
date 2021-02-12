@@ -377,3 +377,43 @@ public:
     }
 };
 ```
+
+
+#### Happy New Year!!!
+
+### 180. 颠倒二进制位
+
+- 基础思路：逐位处理
+- 复杂度分析： O(log2N)  空间复杂度：O(1)
+```class Solution {
+public:
+    uint32_t reverseBits(uint32_t n) {
+        uint32_t res=0;
+        int count=31;
+        while(n){
+            if(n&1){
+                res+=pow(2,count);
+            } 
+            n>>=1;
+            count--;
+        }
+        return res;
+        
+    }
+};
+```
+
+- 优化写法：把幂乘改成位操作<<
+
+```class Solution {
+  public:
+  uint32_t reverseBits(uint32_t n) {
+    uint32_t ret = 0, power = 31;
+    while (n != 0) {
+      ret += (n & 1) << power;
+      n = n >> 1;
+      power -= 1;
+    }
+    return ret;
+  }
+}```
