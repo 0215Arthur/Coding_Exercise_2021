@@ -476,4 +476,109 @@ public:
         return tri;
     }
 };
+``` 
+
+
+### 2. 有效的括号
+
+- 判断字符串内括号是否有效，强调**同级括号的封闭性**
+- 使用**栈**结构对字符串处理
+- 主要思路是：**利用栈压入左字符，当遇到右字符时进行pop**
+    - **考虑临界情况**：当字符串长度为奇时，返回false；
+    - 在pop时考虑栈内是否有字符压入，即右字符先出现的特殊情况；
+- 复杂度分析： 时间复杂度：O(N)   空间复杂度 O(N+C) *有哈希表的影响*
+
+```
+class Solution {
+public:
+    bool isValid(string s) {
+        stack<char> res;
+        map<char, char> m1;
+	    m1['}'] = '{';
+	    m1[']'] = '[';
+        m1[')'] = '(';
+        for(auto chr:s){
+            if(chr=='('|chr=='['|chr=='{'){
+                res.push(chr);
+            }
+            else{
+                if(res.size()==0){
+                    return false;
+                }
+                char tmp=res.top();
+                if(tmp==m1[chr]){
+                    res.pop();
+                }else{
+                    return false;
+                }
+            }
+        }
+        if(res.size()) return false;
+        return true;
+    }
+};
+```
+
+- 优化思路： 利用ANSCII码替代map处理，左右括号符合ANSCII码差异在1或者2。
+
+
+### 缺失的数字
+- 基础思路：先对数组排序，然后遍历数组，查找空缺位置；时间复杂度：排序算法复杂度(O(nlogN))
+- 为了追求线性复杂度，利用更简单的算法：利用高斯求和进行计算：
+    - 时间复杂度 O(N) 空间复杂度 O(1)
+    - **没有考虑数据溢出的情况**，求和可能会造成数据溢出
+
+```class Solution {
+public:
+    int missingNumber(vector<int>& nums) {
+        if(nums.empty())
+        return 0;
+        int lens = nums.size();
+        int count = (lens+1)*(lens)/2;
+        int res=0;
+        for(auto i:nums)
+            res+=i;
+        return count-res;
+
+    }
+};
+```
+
+- **优化改进**：可以通过边加边减的操作来改写代码，这种写法并不能避免极限情况下的溢出，当循环中的前两个数字为最大的两个时，可能直接就溢出了
+    - 注意写法，避免数组越界
+```
+class Solution {
+public:
+    int missingNumber(vector<int>& nums) {
+        if(nums.empty())
+        return 0;
+        int res =  nums.size();
+        for(int i=0;i<nums.size();i++){
+            res+=i;
+            res-=nums[i];
+        }
+        return res;
+
+    }
+};
+```
+- **最简单的优化，利用long型来存储**
+
+- **位运算**操作，利用XOR异或运算来计算缺失值
+    - 异或运算中 相同值异或为0，数组连续异或得到没有重复的数字。
+    - `3^0^0^1^2^1^3=2` n*2+1个数字异或肯定得到一个不重复的数字，即缺失值
+    - 时间复杂度O(N) 空间复杂度O(1)
+```class Solution {
+public:
+    int missingNumber(vector<int>& nums) {
+        if(nums.empty())
+        return 0;
+        int res =  nums.size();
+        for(int i=0;i<nums.size();i++){
+            res^=i;
+            res^=nums[i];
+        }
+        return res;
+    }
+};
 ```
