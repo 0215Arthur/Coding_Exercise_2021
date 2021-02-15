@@ -416,4 +416,64 @@ public:
     }
     return ret;
   }
-}```
+}
+```
+
+- 更常规的操作： 直接取模求和
+
+- 分治合并：利用**位运算** 操作进行翻转（**掩码+位移+合并**）：
+    - 先按照16位左右翻转
+    - 再以8位左右翻转
+    - ... 最后翻转到1位
+    - 其中翻转使用有规模/模式的数字进行位操作
+    - 当分成2个16位小块时，通过左右位移然后再通过或运算合并两部分结果
+    - 当分成4个8位小块时，每部分先通过**掩码**来选取要翻转的位置，然后再通过8位位移操作来实现位置翻转，通过或运算合并结果
+    - 掩码如：00001111000011111 0x0f0f0f0f这种格式实现指定位置的数据提取
+
+
+```
+class Solution {
+public:
+    uint32_t reverseBits(uint32_t n) {
+        uint32_t res=n;
+        res = (res<<16)|(res>>16);
+        res = ((res& 0xff00ff00)>>8)|((res& 0x00ff00ff)<<8);
+        res = ((res& 0xf0f0f0f0)>>4)|((res& 0x0f0f0f0f)<<4);
+        res = ((res& 0xcccccccc)>>2)|((res& 0x33333333)<<2);
+        res = ((res& 0xaaaaaaaa)>>1)|((res& 0x55555555)<<1);
+
+        return res;
+        
+    }
+};
+```
+
+
+### 118. 杨辉三角
+
+
+- 时间复杂度分析：O（n(n+1)/2）
+
+```
+class Solution {
+public:
+    vector<vector<int>> generate(int numRows) {
+        vector<vector<int>> tri(numRows);
+        if(numRows<1)
+          return tri;
+        tri[0].push_back(1);
+        for(int i=1; i<numRows;i++){
+            for(int j=0;j<i+1;j++){
+                if(j==0| j==i)
+                {
+                    tri[i].push_back(tri[i-1][0]);
+                }
+                else{
+                    tri[i].push_back(tri[i-1][j-1]+tri[i-1][j]);
+                }
+            }
+        }
+        return tri;
+    }
+};
+```
