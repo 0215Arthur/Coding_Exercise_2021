@@ -8,6 +8,7 @@
       - [常用模板2 (queue+hash set实现BFS/不重复访问)](#常用模板2-queuehash-set实现bfs不重复访问)
   - [622. 设计循环队列 [Medium]](#622-设计循环队列-medium)
   - [200. 岛屿数量 [Medium]](#200-岛屿数量-medium)
+  - [752. 打开转盘锁 [Medium]](#752-打开转盘锁-medium)
 ## 队列
 ### 基础知识
 - 基本特性：
@@ -50,7 +51,8 @@ class MyQueue {
 #### 标准库： Queue
 - queue<int> p;
 - p.push(x)
-- p.pop()
+- p.pop();
+- p.front();
 - p.empty()
 
 #### 基于队列进行广度优先搜索BFS
@@ -227,6 +229,55 @@ public:
             }
         }
         return res;
+    }
+};
+```
+
+### 752. 打开转盘锁 [Medium]
+- 加了访问限制的遍历问题，求最小步数
+- 使用BFS遍历解题，需要利用哈希表存储限制节点和已访问节点
+- 时间复杂度： O($N^2*A^N+D$), 空间复杂度： O($A^N+D$) A为10 数字数量；N为状态位数；D为限制状态的数量
+
+```class Solution {
+public:
+    bool find_dead(vector<string>& deadends, string target) {
+        vector<string>::iterator iter=find(deadends.begin(),deadends.end(),"0000");
+        if (iter == deadends.end())
+            return false;
+        return true;
+    }
+    int openLock(vector<string>& deadends, string target) {
+        int res = 0;
+        queue<string> q;
+        unordered_set<string> visited; // 使用哈希表存储访问过的节点/dead节点，避免重复访问
+        visited.insert(deadends.begin(),deadends.end());
+        if (find_dead(deadends,"0000"))
+            return -1;
+        q.push("0000");
+        while (!q.empty()) {
+            int s = q.size();
+            for (int i = 0; i < s; i++) {
+                string cur = q.front();
+                q.pop();
+                if (cur == target) 
+                    return res;
+                for (int j = 0; j < 4; j++) {
+                    for (int k = -1; k < 2; k+=2) {
+                        string tmp = cur;
+                        
+                        tmp[j] = char((cur[j] - '0' + 10 + k) % 10 + '0');
+                        //cout << cur << ": "<< tmp <<endl;
+                        if (!visited.count(tmp)) {
+                            q.push(tmp);
+                            visited.insert(tmp);
+                        }
+                    }
+                }
+            }
+            res ++; 
+        }
+        return -1;
+
     }
 };
 ```
