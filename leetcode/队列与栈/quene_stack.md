@@ -9,6 +9,7 @@
   - [622. 设计循环队列 [Medium]](#622-设计循环队列-medium)
   - [200. 岛屿数量 [Medium]](#200-岛屿数量-medium)
   - [752. 打开转盘锁 [Medium]](#752-打开转盘锁-medium)
+  - [279. 完全平方数](#279-完全平方数)
 ## 队列
 ### 基础知识
 - 基本特性：
@@ -277,6 +278,48 @@ public:
             res ++; 
         }
         return -1;
+
+    }
+};
+```
+
+### 279. 完全平方数
+- 寻找最少的完全平方数数量构成target
+- 题目描述反映出这可以通过BFS无脑求解
+- 直接套用BFS模板，即可。
+  - 在队列存储设置上，每步存储n-x的结果
+  - 如果存储x+j从小到大的过程，遍历步数将与暴力搜索无异。。。。
+  - 时间复杂度分析：取决于遍历深度 O($n^{h/2}$) h为遍历深度； 空间复杂度：取决于队列长度，即单层最大节点数量 $O(\sqrt{n}^h)$
+
+```class Solution {
+public:
+    int numSquares(int n) {
+        queue<int> q;
+        q.push(n);
+        int step = 0;
+        vector<int> squares;
+        for (int i = 1; i <= int(sqrt(n)); i++) {
+            squares.push_back(i*i);
+        }
+        while (!q.empty()) {
+            int s = q.size();
+            for (int j = 0; j < s; j++){
+                int cur = q.front();
+                //cout << cur <<endl;
+                q.pop();
+                for (auto _s : squares) {
+                    if (cur == _s)
+                        return step + 1;
+                }
+                for (auto _s : squares) {
+                    int tmp = cur - _s;
+                    if (tmp > 0)
+                        q.push(tmp);
+                }
+            }
+            step++;
+        }
+        return step;
 
     }
 };
