@@ -22,6 +22,7 @@
     - [基于差值存储最小值信息](#基于差值存储最小值信息)
   - [739. 每日温度 [Medium]](#739-每日温度-medium)
     - [利用单调栈解题](#利用单调栈解题)
+  - [20. 有效的括号 [Easy]](#20-有效的括号-easy)
 ## 队列
 ### 基础知识
 - 基本特性：
@@ -588,6 +589,37 @@ public:
             }
         }
         return res;
+    }
+};
+```
+
+### 20. 有效的括号 [Easy]
+- 对stack的基本使用
+
+```
+class Solution {
+public:
+    bool isValid(string s) {
+        stack<char> st;
+        unordered_map<char,char> chrs;
+        chrs.insert({')','('});
+        chrs.insert({']','['});
+        chrs.insert({'}','{'});
+        // {{')', '('},
+        //     {']', '['},
+        //     {'}', '{'}};
+
+        for(int i = 0; i < s.length(); i++) {
+            if (chrs.count(s[i])) {
+                if (st.empty() || st.top() != chrs[s[i]])
+                    return false;
+                st.pop();
+            } 
+            else {
+                st.push(s[i]);
+            }
+        }
+        return st.empty();
     }
 };
 ```
