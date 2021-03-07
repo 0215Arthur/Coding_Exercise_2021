@@ -9,7 +9,17 @@
   - [622. 设计循环队列 [Medium]](#622-设计循环队列-medium)
   - [200. 岛屿数量 [Medium]](#200-岛屿数量-medium)
   - [752. 打开转盘锁 [Medium]](#752-打开转盘锁-medium)
-  - [279. 完全平方数](#279-完全平方数)
+  - [279. 完全平方数 [Medium]](#279-完全平方数-medium)
+    - [BFS套模板](#bfs套模板)
+    - [dp解法](#dp解法)
+  - [队列题目小结](#队列题目小结)
+- [栈 stack](#栈-stack)
+  - [基础知识](#基础知识-1)
+  - [基本实现](#基本实现)
+  - [主要API](#主要api)
+  - [155. 最小栈 [Easy]](#155-最小栈-easy)
+    - [利用辅助栈](#利用辅助栈)
+    - [基于差值存储最小值信息](#基于差值存储最小值信息)
 ## 队列
 ### 基础知识
 - 基本特性：
@@ -283,7 +293,8 @@ public:
 };
 ```
 
-### 279. 完全平方数
+### 279. 完全平方数 [Medium]
+#### BFS套模板
 - 寻找最少的完全平方数数量构成target
 - 题目描述反映出这可以通过BFS无脑求解
 - 直接套用BFS模板，即可。
@@ -323,4 +334,213 @@ public:
 
     }
 };
+```
+- 优化：利用set代替queue来实现队列，减少重复遍历
+
+```class Solution {
+public:
+    int numSquares(int n) {
+        set<int> q;
+        q.insert(n);
+        int step = 0;
+        vector<int> squares;
+        for (int i = 1; i <= int(sqrt(n)); i++) {
+            squares.push_back(i*i);
+        }
+        while (!q.empty()) {
+            int s = q.size();
+            set<int> queue_set;
+            for (auto cur : q){
+                for (auto _s : squares) {
+                    if (cur == _s)
+                        return step + 1;
+                }
+                for (auto _s : squares) {
+                    int tmp = cur - _s;
+                    if (tmp > 0)
+                        queue_set.insert(tmp);
+                }
+            }
+            step++;
+            q = queue_set;
+        }
+        return step;
+
+    }
+};
+```
+
+#### dp解法
+- dp[i] = min(dp[i-k]+1)
+- 时间复杂度： $O(n*\sqrt{n})$ , 空间复杂度 O(n)
+  
+```class Solution {
+public:
+    int numSquares(int n) {
+        vector<int> dp(n + 1);
+        dp.assign(n + 1, INT_MAX);
+        vector<int> squares;
+        for (int i = 1; i <= sqrt(n); i++) {
+            squares.push_back(i * i);
+        }
+        dp[0] = 0;
+        for (int i = 1; i <= n; i++) {
+            for (auto k : squares) {
+                if (i - k < 0)
+                    break;
+                if (dp[i - k] + 1 < dp[i])
+                    dp[i] = dp[i - k] + 1;
+            }
+        }
+        return dp[n];
+    }
+};
+```
+
+### 队列题目小结
+- 常用于寻找最短路径及其延伸问题，牢记两种模板即可
+- 往往题目不止BFS一种解法，可能还是DFS/DP的解法
+
+
+## 栈 stack
+### 基础知识
+后入先出的结构，主要操作：
+- push 入栈
+- pop 出栈
+- top 返回栈顶值
+  
+### 基本实现
+利用STL：vector即可实现：
+```class MyStack {
+    private:
+        vector<int> data;               // store elements
+    public:
+        /** Insert an element into the stack. */
+        void push(int x) {
+            data.push_back(x);
+        }
+        /** Checks whether the queue is empty or not. */
+        bool isEmpty() {
+            return data.empty();
+        }
+        /** Get the top item from the queue. */
+        int top() {
+            return data.back();
+        }
+        /** Delete an element from the queue. Return true if the operation is successful. */
+        bool pop() {
+            if (isEmpty()) {
+                return false;
+            }
+            data.pop_back();
+            return true;
+        }
+};
+```
+### 主要API
+stack<int> s;
+s.push(x);
+s.pop();
+s.top();
+s.empty();
+### 155. 最小栈 [Easy]
+#### 利用辅助栈
+- 用辅助栈来存储最小值信息
+
+```
+class MinStack {
+private:
+    vector<int> data;
+    vector<int> min_data;
+public:
+    /** initialize your data structure here. */
+    MinStack() {
+
+    }
+    
+    void push(int x) {
+        data.push_back(x);
+        if (!min_data.empty() && x >= min_data.back()) {
+                min_data.push_back(min_data.back());
+        }
+        else {
+            min_data.push_back(x);
+        }
+        //cout << min_data.back() << endl;
+    }
+    
+    void pop() {
+        if (!data.empty()) {
+            data.pop_back();
+            min_data.pop_back();
+            }
+
+    }
+    
+    int top() {
+        return data.back();
+    }
+    
+    int getMin() {
+        return min_data.back();
+
+    }
+};
+```
+
+#### 基于差值存储最小值信息
+- 注意数值范围，**避免越界**
+- 使用long 存储diff
+```
+class MinStack {
+private:
+    stack<long> st;
+    long  _min;
+    
+public:
+    /** initialize your data structure here. */
+    MinStack() {
+
+    }
+    
+    void push(int x) {
+        if (!st.empty()) {
+            long long diff = x - _min;
+            _min = diff > 0 ? _min : x;
+            st.push(diff);
+        }
+        else {
+            _min = x;
+            st.push(0);
+        }
+        //cout << min_data.back() << endl;
+    }
+    
+    void pop() {
+        if (!st.empty()) {
+            long long diff = st.top();
+            st.pop();
+            if (diff < 0) {
+                _min = int (_min - diff);
+            }
+        }
+    }
+    
+    int top() {
+        return st.top() < 0 ? _min : int(st.top() + _min);
+    }
+    
+    int getMin() {
+        return _min;
+    }
+};
+
+/**
+ * Your MinStack object will be instantiated and called as such:
+ * MinStack* obj = new MinStack();
+ * obj->push(x);
+ * obj->pop();
+ * int param_3 = obj->top();
+ * int param_4 = obj->getMin();
+ */
 ```
