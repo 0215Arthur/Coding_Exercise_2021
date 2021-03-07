@@ -20,6 +20,8 @@
   - [155. 最小栈 [Easy]](#155-最小栈-easy)
     - [利用辅助栈](#利用辅助栈)
     - [基于差值存储最小值信息](#基于差值存储最小值信息)
+  - [739. 每日温度 [Medium]](#739-每日温度-medium)
+    - [利用单调栈解题](#利用单调栈解题)
 ## 队列
 ### 基础知识
 - 基本特性：
@@ -543,4 +545,49 @@ public:
  * int param_3 = obj->top();
  * int param_4 = obj->getMin();
  */
+```
+
+### 739. 每日温度 [Medium]
+#### 利用单调栈解题
+- 单调栈 https://blog.csdn.net/lucky52529/article/details/89155694
+- 从栈底到栈顶数据单调递增或递减。
+- 逻辑模板：以单调递减栈为例
+```
+stack<int> st
+for (visit list) {
+    if (st空 ｜｜st.top >= 当前元素) 
+        入栈
+    else
+        while (st不空 && st.top < 当前元素) 
+        {
+            出栈；
+            update res;
+        }
+        当前数据入栈
+}
+```
+- 直接套用单调栈模板得到结果
+- 在实际答题中，需要能够发现单调栈的使用情况：
+  - **要寻找任一个元素的右边或者左边第一个比自己大或者小的元素的位置**
+```
+class Solution {
+public:
+    vector<int> dailyTemperatures(vector<int>& T) {
+        stack<int> st;
+        vector<int> res(T.size(),0);
+        for (int i = 0; i < T.size(); i++) {
+            if (st.empty() || T[st.top()] >= T[i]) {
+                st.push(i);
+            } else {
+                while (!st.empty() && T[st.top()] < T[i]) {
+                    int prev = st.top();
+                    res[prev] = i - prev;
+                    st.pop();
+                }
+                st.push(i);
+            }
+        }
+        return res;
+    }
+};
 ```
