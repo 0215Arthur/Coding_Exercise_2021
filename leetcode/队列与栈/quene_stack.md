@@ -23,6 +23,7 @@
   - [739. 每日温度 [Medium]](#739-每日温度-medium)
     - [利用单调栈解题](#利用单调栈解题)
   - [20. 有效的括号 [Easy]](#20-有效的括号-easy)
+  - [150. 波兰表达式 [Easy]](#150-波兰表达式-easy)
 ## 队列
 ### 基础知识
 - 基本特性：
@@ -620,6 +621,37 @@ public:
             }
         }
         return st.empty();
+    }
+};
+```
+
+### 150. 波兰表达式 [Easy]
+- 栈的典型应用
+```class Solution {
+public:
+    int evalRPN(vector<string>& tokens) {
+        stack<int> st;
+        for (int i = 0; i < tokens.size(); i++) {
+            if (tokens[i] == "-" || tokens[i] == "+" || tokens[i] == "*" || tokens[i] == "/") {
+                int a = st.top();
+                st.pop();
+                int b = st.top();
+                st.pop();
+                if (tokens[i] == "-")
+                    st.push(b - a);
+                else if (tokens[i] == "+")
+                    st.push(b + a);
+                else if (tokens[i] == "*")
+                    st.push(b * a);
+                else if (tokens[i] == "/")
+                    st.push(b / a);
+            } 
+            else {
+                st.push(stoi(tokens[i]));
+            }
+        }
+        return st.top();
+
     }
 };
 ```
