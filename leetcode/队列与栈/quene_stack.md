@@ -24,6 +24,12 @@
     - [利用单调栈解题](#利用单调栈解题)
   - [20. 有效的括号 [Easy]](#20-有效的括号-easy)
   - [150. 波兰表达式 [Easy]](#150-波兰表达式-easy)
+  - [栈与DFS](#栈与dfs)
+    - [与BFS的差异](#与bfs的差异)
+    - [DFS 模版1](#dfs-模版1)
+  - [200. 岛屿数量 [DFS实现]](#200-岛屿数量-dfs实现)
+  - [133. 克隆图 [Medium]](#133-克隆图-medium)
+  - [494. 目标和 target sum [Medium]](#494-目标和-target-sum-medium)
 ## 队列
 ### 基础知识
 - 基本特性：
@@ -652,6 +658,247 @@ public:
         }
         return st.top();
 
+    }
+};
+```
+### 栈与DFS
+使用栈来存储深度优先遍历过程中的遍历节点，并利用栈进行回溯。
+#### 与BFS的差异
+遍历顺序的差异导致，DFS达到目标点的第一次路径遍历不一定是最短路径
+
+#### DFS 模版1
+基于递归实现：
+```
+boolean DFS(Node cur, Node target, Set<Node> visited) {
+    return true if cur is target;
+    for (next : each neighbor of cur) {
+        if (next is not in visited) {
+            add next to visted;
+            return true if DFS(next, target, visited) == true;
+        }
+    }
+    return false;
+}
+```
+### 200. 岛屿数量 [DFS实现]
+- 时间复杂度分析： O(MN); 空间复杂度：O(MN)（最差情况下，所有点都是1）
+- BFS 时间复杂度: O(MN); 空间复杂度O(min(M,n))
+```
+class Solution {
+
+public:
+    void dfs(vector<vector<char>>& grid, int row, int col) {
+        grid[row][col] = '0';
+        int nr = grid.size();
+        int nc = grid[0].size();
+        if (row - 1 >= 0 && grid[row - 1][col] == '1')  dfs(grid, row - 1, col);
+        if (row + 1 < nr && grid[row + 1][col] == '1')  dfs(grid, row + 1, col);
+        if (col - 1 >= 0 && grid[row][col - 1] == '1')  dfs(grid, row, col - 1);
+        if (col + 1 < nc && grid[row][col + 1] == '1')  dfs(grid, row, col + 1);   
+    }
+    int numIslands(vector<vector<char>>& grid) {
+        int res = 0;
+        if (grid.empty())
+            return 0;
+        int cols = grid[0].size();
+        for (int i = 0; i < grid.size(); i++) {
+            for (int j = 0; j < cols; j++) {
+                if (grid[i][j] == '1') {
+                    dfs(grid, i, j);
+                    res++;
+                }
+            }
+        }
+        return res;
+    }
+};
+```
+
+### 133. 克隆图 [Medium]
+
+- 图遍历问题，BFS或者DFS都可以实现
+- 主要在于构建新老节点的hash表来记录
+
+```
+/*
+// Definition for a Node.
+class Node {
+public:
+    int val;
+    vector<Node*> neighbors;
+    Node() {
+        val = 0;
+        neighbors = vector<Node*>();
+    }
+    Node(int _val) {
+        val = _val;
+        neighbors = vector<Node*>();
+    }
+    Node(int _val, vector<Node*> _neighbors) {
+        val = _val;
+        neighbors = _neighbors;
+    }
+};
+*/
+
+class Solution {
+public:
+    unordered_map<Node*, Node*> visited;
+    Node* dfs (Node* node) {
+        if (node == nullptr)
+            return node;
+        if (visited.count(node)) {
+            return visited[node];
+        }
+        Node* clone = new Node(node -> val);
+        visited[node] = clone;
+        for (auto& cur : node -> neighbors) {
+            clone -> neighbors.emplace_back(dfs(cur));
+        }
+        return clone;
+    }
+    Node* cloneGraph(Node* node) {
+        return dfs(node);
+    }
+};
+```
+BFS: 
+```
+class Solution {
+public:
+    unordered_map<Node*, Node*> visited;
+    Node* cloneGraph(Node* node) {
+        if (node == nullptr) 
+            return node;
+        stack<Node*> st;
+        st.push(node);
+        visited[node] = new Node(node -> val);
+        while (!st.empty()) {
+            int s = st.size();
+            for (int i = 0; i < s; i++) {
+                Node* cur = st.top();
+                st.pop();
+                for(auto& neigh : cur -> neighbors) {
+                    if (!visited.count(neigh)) {
+                        visited[neigh] = new Node(neigh -> val);
+                        st.push(neigh);
+                    }
+                    visited[cur] -> neighbors.emplace_back(visited[neigh]);
+                }
+            }
+        }
+        return visited[node];
+    }
+};
+```
+
+### 494. 目标和 target sum [Medium]
+- 给定序列，计算仅利用+ -运算组合可以得到的目标值的组合数量
+- DFS搜索所有可能组合，是最为暴力的解题方法
+  - 时间复杂度： O(2^N),N为数组的长度，即组合的数量； 空间复杂度O(N)
+
+```
+class Solution {
+public:
+    int count = 0;
+    void dfs(vector<int>& nums, int S, int cur, int i) {
+        if (i == nums.size()) {
+            if (cur == S)
+            count++;
+        }
+        else 
+        {
+            dfs(nums, S, cur + nums[i], i+1);
+            dfs(nums, S, cur - nums[i], i+1);
+        }
+    }
+    int findTargetSumWays(vector<int>& nums, int S) {
+        dfs(nums, S, 0, 0);
+        return count;
+    }
+};
+```
+- 其他方法： 利用动态规划方法，大幅减少搜索空间
+  - `dp[i][j]`定义i个数构成目标值j的组合数量
+  - 状态转移方程：`dp[i][j] = dp[i-1][j-nums[i]] + dp[i-1][j+nums[i]]`
+    - 初始化比较复杂： 由于j- nums[i]可能出现负值，因此需要将遍历空间调大： 增大到`[0,2*sum+1)`的范围；
+    - 同时**初始化最开始的元素取值**：
+      - `dp[0][nums[0]+sum]=1 dp[0][sum -nums[0]]=1`
+      - 还要考虑当`nums[0]=0`的特殊情况，`dp[0][sum]=2`
+    - 时间复杂度： O(N^2), 空间复杂度O(N*max(sum)) N为数组长度
+
+```
+class Solution {
+public:
+    int findTargetSumWays(vector<int>& nums, int S) {
+        vector<vector<int> > dp;
+        int sum = 0;
+        for (auto i: nums) {
+            sum += i;
+        }
+        if (sum < S)
+            return 0;
+        for (int i = 0; i < nums.size(); i++) {
+            vector<int> tmp;
+            tmp.assign(2*sum + 1, 0);
+            dp.push_back(tmp);
+        }
+        int t = 2*sum + 1;
+        if (nums[0] == 0) {
+            dp[0][sum] = 2;
+        }
+        else {
+            dp[0][nums[0] + sum] = 1; // init 
+            dp[0][sum - nums[0]] = 1; // init
+        }
+        //cout << t << endl;
+        for (int i = 1; i < nums.size(); i++) {
+            for (int j = 0; j < t; j++ ) {
+                int l = j - nums[i] < 0 ? 0 : j - nums[i];
+                int r = j + nums[i] >= t ? 0 : j + nums[i];
+                //cout << l << r << endl;
+                dp[i][j] = dp[i - 1][l] + dp[i - 1][r];
+            }
+        }
+        return dp[nums.size() - 1][S + sum];
+    }
+};
+```
+- 在上面的基础上，可以对dp数组进行优化，仅利用两个一维数组进行存储。大幅降低空间复杂度
+  - 由于上面的转移方程中仅涉及相邻状态的转换，因此可以利用两个数组进行相对更新存储，在动态规划中十分常见
+```
+class Solution {
+public:
+    int findTargetSumWays(vector<int>& nums, int S) {
+        vector<vector<int> > dp;
+        int sum = 0;
+        for (auto i: nums) {
+            sum += i;
+        }
+        if (sum < S)
+            return 0;
+        
+        vector<int> prev;
+        prev.assign(2*sum + 1, 0);
+        vector<int> next;
+        next.assign(2*sum + 1, 0);
+        int t = 2*sum + 1;
+        if (nums[0] == 0) {
+            prev[sum] = 2;
+        }
+        else {
+            prev[nums[0] + sum] = 1; // init 
+            prev[sum - nums[0]] = 1; // init
+        }
+        for (int i = 1; i < nums.size(); i++) {
+            for (int j = 0; j < t; j++ ) {
+                int l = j - nums[i] < 0 ? 0 : j - nums[i];
+                int r = j + nums[i] >= t ? 0 : j + nums[i];
+                next[j] = prev[l] + prev[r];
+            }
+            prev = next;
+        }
+        return prev[S + sum];
     }
 };
 ```
