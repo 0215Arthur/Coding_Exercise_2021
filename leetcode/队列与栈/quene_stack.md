@@ -26,10 +26,13 @@
   - [150. 波兰表达式 [Easy]](#150-波兰表达式-easy)
   - [栈与DFS](#栈与dfs)
     - [与BFS的差异](#与bfs的差异)
-    - [DFS 模版1](#dfs-模版1)
+    - [DFS 模版1 - 基于递归实现：](#dfs-模版1---基于递归实现)
+    - [DFS 模版2 - 显式栈实现](#dfs-模版2---显式栈实现)
   - [200. 岛屿数量 [DFS实现]](#200-岛屿数量-dfs实现)
   - [133. 克隆图 [Medium]](#133-克隆图-medium)
   - [494. 目标和 target sum [Medium]](#494-目标和-target-sum-medium)
+  - [二叉树的中序遍历](#二叉树的中序遍历)
+- [进阶训练](#进阶训练)
 ## 队列
 ### 基础知识
 - 基本特性：
@@ -666,8 +669,7 @@ public:
 #### 与BFS的差异
 遍历顺序的差异导致，DFS达到目标点的第一次路径遍历不一定是最短路径
 
-#### DFS 模版1
-基于递归实现：
+#### DFS 模版1 - 基于递归实现：
 ```
 boolean DFS(Node cur, Node target, Set<Node> visited) {
     return true if cur is target;
@@ -680,6 +682,32 @@ boolean DFS(Node cur, Node target, Set<Node> visited) {
     return false;
 }
 ```
+#### DFS 模版2 - 显式栈实现
+```
+boolean DFS(int root, int target) {
+    set<Node> visited;
+    stack<Node> s;
+    add root to s;
+    while (!s.empty()) {
+        Node cur = s.top();
+        return true if cur is target;
+        for (Node next : the neighbors of cur) {
+            if (next is not in visited) {
+                add next to s;
+                add next to visited;
+            }
+        }
+        s.pop();
+    }
+}
+```
+
+
+
+
+
+
+
 ### 200. 岛屿数量 [DFS实现]
 - 时间复杂度分析： O(MN); 空间复杂度：O(MN)（最差情况下，所有点都是1）
 - BFS 时间复杂度: O(MN); 空间复杂度O(min(M,n))
@@ -902,3 +930,52 @@ public:
     }
 };
 ```
+
+### 二叉树的中序遍历
+
+- 中序遍历：左节点->root->right
+- 最基本的实现： 递归方式；
+  
+```
+class Solution {
+public:
+    vector<int> vals;
+    void inorder(TreeNode* root) {
+        if (root == nullptr) 
+            return ;
+        inorder(root->left);
+        vals.push_back(root -> val);
+        inorder(root->right);
+    }
+    vector<int> inorderTraversal(TreeNode* root) {
+        inorder(root);
+        return vals;
+ 
+    }
+};
+```
+- 基于模板二的迭代实现：
+按照上面的思路，利用stack进行迭代，每次遍历至最左侧的节点，然后进行结果记录，并开始右侧节点迭代。
+```
+class Solution {
+public:
+    vector<int> inorderTraversal(TreeNode* root) {
+        stack<TreeNode*> st;
+        vector<int> vals;
+        while (!st.empty() || root) {
+            while (root) {
+                st.push(root);
+                root = root -> left;
+            }
+            TreeNode* top = st.top();
+            st.pop();
+            vals.push_back(top -> val);
+            root = top -> right;
+        }
+        return vals;
+    }
+};
+```
+
+## 进阶训练
+
