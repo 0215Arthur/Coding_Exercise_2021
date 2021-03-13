@@ -33,6 +33,9 @@
   - [494. 目标和 target sum [Medium]](#494-目标和-target-sum-medium)
   - [二叉树的中序遍历](#二叉树的中序遍历)
 - [进阶训练](#进阶训练)
+  - [232. 用栈实现队列 [Easy]](#232-用栈实现队列-easy)
+  - [225. 用队列实现栈 [Easy]](#225-用队列实现栈-easy)
+  - [字符串解码 [Medium]](#字符串解码-medium)
 ## 队列
 ### 基础知识
 - 基本特性：
@@ -979,3 +982,266 @@ public:
 
 ## 进阶训练
 
+### 232. 用栈实现队列 [Easy]
+- 构建两个栈来存储数据，以实现从FILO到FIFO的转换
+- 一个栈做输入栈，push入数据；另一个栈做输出栈，将输入栈的数据逐个从顶弹出再压入输出栈，从而完成了顺序的变化
+- 时间复杂度分析：均摊到O(1) 空间复杂度O(N)
+```
+class MyQueue {
+public:
+    stack<int> in_st;
+    stack<int> out_st;
+    /** Initialize your data structure here. */
+    MyQueue() {
+
+    }
+    
+    /** Push element x to the back of queue. */
+    void push(int x) {
+        in_st.push(x);
+    }
+    
+    /** Removes the element from in front of queue and returns that element. */
+    int pop() {
+        int res = peek();
+        if (!out_st.empty()) {
+            res = peek();
+           out_st.pop();
+           return res;
+        }
+        return res;
+    }
+    
+    /** Get the front element. */
+    int peek() {
+        if (out_st.empty()) {
+            while (!in_st.empty()) {
+                out_st.push(in_st.top());
+                in_st.pop();
+            }
+        }  
+        if (!out_st.empty()){
+            int res = out_st.top();
+            return res;
+        }
+        return -1;
+    }
+    
+    /** Returns whether the queue is empty. */
+    bool empty() {
+        if (in_st.empty() &&  out_st.empty()) {
+            return true;
+        }
+        return false;
+    }
+};
+```
+
+### 225. 用队列实现栈 [Easy]
+- 跟上题相似，通过双队列交换实现栈
+- 用一个队列存储当前最新的输入，并加另一个临时队列存储的输入，加入队尾；
+- 通过这种迭代实现， 临时队列中的存储是LIFO的结构，最近push进入的永远在队首
+- 时间复杂度： 入栈O(n) 空间复杂度: O(n)
+
+```
+class MyStack {
+    queue<int> q1;
+    queue<int> q2;
+public:
+    /** Initialize your data structure here. */
+    MyStack() {
+
+    }
+    
+    /** Push element x onto stack. */
+    void push(int x) {
+        q1.push(x);
+        while (!q2.empty()) {
+            q1.push(q2.front());
+            q2.pop();
+        }
+        swap (q1, q2);
+    }
+    
+    /** Removes the element on top of the stack and returns that element. */
+    int pop() {
+        int res = q2.front();
+        q2.pop();
+        return res;
+    }
+    
+    /** Get the top element. */
+    int top() {
+        int res = q2.front();
+        return res;
+    }
+    
+    /** Returns whether the stack is empty. */
+    bool empty() {
+        if (q2.empty())
+            return true;
+        return false;
+    }
+};
+```
+- 进一步优化,仅利用**一个队列**，每次push时都进行队列内元素后移，相当于进行插入操作
+```
+class MyStack {
+    queue<int> q1;
+
+public:
+    /** Initialize your data structure here. */
+    MyStack() {
+
+    }
+    
+    /** Push element x onto stack. */
+    void push(int x) {
+        int n = q1.size();
+        q1.push(x);
+        for (int i = 0; i < n; i++) {
+            q1.push(q1.front());
+            q1.pop();
+        }
+    }
+    
+    /** Removes the element on top of the stack and returns that element. */
+    int pop() {
+        int res = q1.front();
+        q1.pop();
+        return res;
+    }
+    
+    /** Get the top element. */
+    int top() {
+        int res = q1.front();
+        return res;
+    }
+    
+    /** Returns whether the stack is empty. */
+    bool empty() {
+        if (q1.empty())
+            return true;
+        return false;
+    }
+};
+```
+  
+### 字符串解码 [Medium]
+
+- 思路比较简单，但在实现上细节比较多，细节是魔鬼
+- 直接通过栈存储`]`之前的字母(string(1, char]))或`[`或者数字
+  - 数字通过string遍历，获取完整数字范围 
+- 遇到`]`时进行**出栈操作**
+  - 先取出栈中`[`之内的字母，然后取出栈顶的数字  stoi()
+  - 进行字符串拼接，将拼接后的字符串再压入栈中
+- 当遍历完成后，将栈中的字符串拼接得到结果
+- 时间复杂度分析： O(N)，空间复杂度O(N)
+- 
+```
+#include <algorithm>
+class Solution {
+public:
+    string getDigit(string& s, size_t& ptr) {
+        string res = "";
+        while (ptr < s.size() && isdigit(s[ptr])) {
+            res.push_back(s[ptr++]);
+        }
+        return res;
+    }
+
+    string getString(vector<string>& s) {
+        string res = "";
+        for(auto& _s: s) {
+            res += _s;
+        }
+        return res;
+
+    }
+    string decodeString(string s) {
+        size_t ptr = 0;
+        vector<string> st;
+        while(ptr < s.size()) {
+            if (isdigit(s[ptr])) {
+                st.push_back(getDigit(s,ptr));
+            }
+            else if (isalpha(s[ptr]) || s[ptr]=='[') {
+                st.push_back(string(1, s[ptr++])); //  转换char to string
+            }
+            else {
+                ptr++;
+                // 出栈操作
+                vector<string> tmp; //记录出栈字符串信息
+                while (st.back()!="[") {
+                    tmp.push_back(st.back());
+                    st.pop_back();
+                }
+                st.pop_back();// [ 出栈
+                int repTime = stoi(st.back());
+                st.pop_back();
+                reverse(tmp.begin(), tmp.end());
+                string cur = getString(tmp);
+                string _c = cur;
+                for (int i = 0; i < repTime - 1; i++) {
+                    cur += _c;
+                }
+                st.push_back(cur);
+            }
+        }
+        string res = "";
+        for (auto s: st) {
+            res += s;
+        }
+        return res;
+    }
+};
+```
+
+- 基于递归思想实现
+  - 递归思考起来跟前面的栈方式基本差不多
+  - 但是很难写。。。。。 栈形式相较而言还是能写出来的
+    - 递归终止条件
+    - 递归返回情况
+    - 字符串内部处理分类： 字母/数字
+
+```
+#include <algorithm>
+class Solution {
+    string src;
+    size_t ptr;
+public:
+    string getDigit() {
+        string res = "";
+        while (ptr < src.size() && isdigit(src[ptr])) {
+            res.push_back(src[ptr++]);
+        }
+        return res;
+    }
+
+    string getString() {
+        // 终止条件
+        if (ptr == src.size() || src[ptr] == ']') {
+            return "";
+        }
+        string ret = "";
+        if (isdigit(src[ptr])) {
+            int repTime = stoi(getDigit()); //获取重复次数
+            ptr++; // 跳过 [
+            string cur = getString(); // 构建字符串
+            ptr++; // 跳过 ]
+            // 重复字符串
+            while (repTime--) 
+                ret += cur;
+        }
+        else if (isalpha(src[ptr])) {
+            ret += string(1, src[ptr++]);// 拼接字符串
+        }
+        return ret + getString(); //对递归结果进行拼接，以得到完整的结果
+    }
+    string decodeString(string s) {
+        src = s;
+        ptr = 0;
+        return getString();
+    }
+};
+```
