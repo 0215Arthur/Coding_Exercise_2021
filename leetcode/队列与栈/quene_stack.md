@@ -36,6 +36,10 @@
   - [232. 用栈实现队列 [Easy]](#232-用栈实现队列-easy)
   - [225. 用队列实现栈 [Easy]](#225-用队列实现栈-easy)
   - [字符串解码 [Medium]](#字符串解码-medium)
+  - [733. 图像渲染 [Easy]](#733-图像渲染-easy)
+  - [542. 01矩阵 [Matrix] **](#542-01矩阵-matrix-)
+  - [841. 钥匙和房间](#841-钥匙和房间)
+- [小结](#小结)
 ## 队列
 ### 基础知识
 - 基本特性：
@@ -1245,3 +1249,201 @@ public:
     }
 };
 ```
+
+### 733. 图像渲染 [Easy]
+- DFS 需要重点考虑初始节点与目标颜色相同的情况
+```
+class Solution {
+public:
+    void dfs(vector<vector<int>>& image, int sr, int sc, int oldColor, int newColor) {
+        int rows = image.size();
+        int cols = image[0].size();
+        image[sr][sc] = newColor;
+        if (sr - 1 >= 0 && image[sr - 1][sc] == oldColor) dfs(image, sr - 1, sc, oldColor, newColor);
+        if (sr + 1 < rows && image[sr + 1][sc] == oldColor) dfs(image, sr + 1, sc, oldColor, newColor);
+        if (sc - 1 >= 0 && image[sr][sc - 1] == oldColor) dfs(image, sr, sc - 1, oldColor, newColor);
+        if (sc + 1 < cols && image[sr][sc + 1] == oldColor) dfs(image, sr, sc + 1, oldColor, newColor);
+        return;
+    }
+    vector<vector<int>> floodFill(vector<vector<int>>& image, int sr, int sc, int newColor) {
+        if (image[sr][sc] != newColor) {
+            dfs(image, sr, sc, image[sr][sc], newColor);
+        }
+        return image;
+    }
+};
+```
+
+- BFS: **不同的image渲染时间对程序效率影响很大，在对当前队首四周节点进行遍历时就进行image修改，可以很大程度减少遍历次数**。 如果每次仅在队列取首时才进行修改，会有很多重复遍历
+
+```
+class Solution {
+public:
+    void bfs(vector<vector<int>>& image, int sr, int sc, int oldColor, int newColor) {
+        queue<pair<int, int> > q;
+        q.push({sr,sc});
+        image[sr][sc] = newColor;
+        int rows = image.size();
+        int cols = image[0].size();
+        while (!q.empty()) {
+            int q_size = q.size();
+            for (int i = 0; i < q_size; i++) {
+                pair<int, int> cur = q.front();
+                q.pop();
+                int row = cur.first;
+                int col = cur.second;
+                if (row - 1 >= 0 && image[row - 1][col] == oldColor) {
+                    q.push({row - 1, col});
+                    image[row - 1][col] = newColor;
+                }
+                if (row + 1 < rows && image[row + 1][col] == oldColor) {
+                    q.push({row + 1, col});
+                    image[row + 1][col] = newColor;
+                }
+                if (col - 1 >= 0 && image[row][col - 1] == oldColor) {
+                    q.push({row, col - 1});
+                    image[row][col - 1] = newColor;
+                }
+                if (col + 1 < cols && image[row][col + 1] == oldColor) {
+                    q.push({row, col + 1});
+                    image[row][col + 1] = newColor;
+                }
+            }
+        }
+    }
+    vector<vector<int>> floodFill(vector<vector<int>>& image, int sr, int sc, int newColor) {
+        if (image[sr][sc] != newColor) {
+            bfs(image, sr, sc, image[sr][sc], newColor);
+        }
+        return image;
+    }
+};
+```
+###  542. 01矩阵 [Matrix] **
+
+- 巧妙地对问题进行分析，在计算每个位置上的答案时不是重复搜索，而是从0出发反向搜索，一次全图的bfs就得到了所有位置上到0的距离
+  - 时间复杂度：O(rows*cols) 空间复杂度 O(rows * cols)
+  - 初始设置：设置visited矩阵记录已访问的信息；将0元素位置首先加入队列中
+```
+class Solution {
+
+public:
+    int dirs_x[4] = {-1, 1, 0, 0};
+    int dirs_y[4] = {0, 0, -1, 1};
+
+    vector<vector<int>> updateMatrix(vector<vector<int>>& matrix) {
+        int rows = matrix.size();
+        int cols = matrix[0].size();
+        queue<pair<int, int> > q;
+        vector<vector<int> > res(rows, vector<int>(cols));
+        vector<vector<int> > visited(rows, vector<int>(cols)); //记录访问信息
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                if (matrix[i][j] == 0) {
+                    visited[i][j] = 1;
+                    q.push({i,j});
+                }
+            }
+        }
+
+        while (!q.empty()) {
+            int q_size = q.size();
+            for (int i = 0; i < q_size; i++) {
+                pair<int, int> cur = q.front();
+                q.pop();
+                int row = cur.first;
+                int col = cur.second;
+                for (int j = 0; j < 4; j++) {
+                    if (row + dirs_x[j] >= 0 && row + dirs_x[j] < rows && 
+                         col + dirs_y[j] >= 0 && col + dirs_y[j] < cols && 
+                         !visited[row + dirs_x[j]][col + dirs_y[j]]) {
+                          q.push({row + dirs_x[j], col + dirs_y[j]});
+                          visited[row + dirs_x[j]][col + dirs_y[j]] = 1;
+                          res[row + dirs_x[j]][col + dirs_y[j]] = res[row][col] + 1;
+                         }
+                }
+
+            }
+        }
+        return res;
+    }
+};
+```
+- **可以进一步将上面的visited矩阵省略，仅判断当前位置的结果以及是否为1即可避免重复遍历哦**
+  
+```class Solution {
+
+public:
+    int dirs_x[4] = {-1, 1, 0, 0};
+    int dirs_y[4] = {0, 0, -1, 1};
+
+    vector<vector<int>> updateMatrix(vector<vector<int>>& matrix) {
+        int rows = matrix.size();
+        int cols = matrix[0].size();
+        queue<pair<int, int> > q;
+        vector<vector<int> > res(rows, vector<int>(cols));
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                if (matrix[i][j] == 0) {
+                    q.push({i,j});
+                }
+            }
+        }
+
+        while (!q.empty()) {
+            int q_size = q.size();
+            for (int i = 0; i < q_size; i++) {
+                pair<int, int> cur = q.front();
+                q.pop();
+                int row = cur.first;
+                int col = cur.second;
+                for (int j = 0; j < 4; j++) {
+                    if (row + dirs_x[j] >= 0 && row + dirs_x[j] < rows && 
+                         col + dirs_y[j] >= 0 && col + dirs_y[j] < cols && 
+                         !res[row + dirs_x[j]][col + dirs_y[j]] &&
+                         matrix[row + dirs_x[j]][col + dirs_y[j]]) {
+                          q.push({row + dirs_x[j], col + dirs_y[j]});
+                          
+                          res[row + dirs_x[j]][col + dirs_y[j]] = res[row][col] + 1;
+                         }
+                }
+
+            }
+        }
+        return res;
+    }
+};
+```
+### 841. 钥匙和房间
+- DFS遍历，记录已访问过的节点，避免重复访问，同时可以记录遍历节点的数量；
+```
+class Solution {
+public:
+    vector<int> visited;
+    void dfs(vector<vector<int>>& rooms, int x) {
+        visited[x] = 1;
+        for (int i = 0; i < rooms[x].size(); i++) {
+            int next = rooms[x][i];
+            if (!visited[next])
+                dfs(rooms, next);
+        }
+    }
+    bool canVisitAllRooms(vector<vector<int>>& rooms) {
+        int N = rooms.size();
+        visited.resize(N);
+        dfs(rooms, 0);
+        int res = 0;
+        for (auto s : visited) 
+            res +=s;
+        return res == N; 
+    }
+};
+
+```
+
+
+## 小结
+- 熟记DFS和BFS的基本模版，并考虑是否需要加visited
+- 重复访问节点可以通过哈希表set/map进行实现，也可以通过array数组的 形式进行组织
+- 对应清楚queue和stack在两者间的作用
+- 关于DFS，递归模式要比较仔细
