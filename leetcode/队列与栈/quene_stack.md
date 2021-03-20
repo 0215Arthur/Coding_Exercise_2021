@@ -1447,3 +1447,58 @@ public:
 - 重复访问节点可以通过哈希表set/map进行实现，也可以通过array数组的 形式进行组织
 - 对应清楚queue和stack在两者间的作用
 - 关于DFS，递归模式要比较仔细
+
+
+```
+ vector<int> l_max;
+        vector<int> r_max;
+        l_max.push_back(0);
+        int cur_max = heights[0];
+        int cur_max_id = 0;
+        for (int i = 1; i < heights.size(); i++) {
+            if (heights[i] >= cur_max) {
+                cur_max = heights[i];
+                l_max.push_back(i); //当前最高
+                cur_max_id = i;
+            } 
+            else {
+                l_max.push_back(cur_max_id);
+            }
+        }
+        int len = heights.size();
+        r_max.push_back(len - 1);
+        cur_max = heights[len - 1];
+        cur_max_id = len - 1;
+        for (int i = len - 2; i >= 0; i--) {
+            if (heights[i] >= cur_max) {
+                cur_max = heights[i];
+                r_max.push_back(i); //当前最高
+                cur_max_id = i;
+            } 
+            else {
+                r_max.push_back(cur_max_id);
+            }
+        }
+        reverse(r_max.begin(),r_max.end());
+       // for (auto i : l_max) 
+        //    cout << i << " ";
+        //for (auto i : r_max) 
+        //    cout << i << " ";
+        
+        // 计算res
+        vector<int> ans;
+        ans.push_back(r_max[0] + 1);
+        for (int i = 1; i < len - 1; i++) {
+            if (r_max[i] == l_max[i]) {
+                ans.push_back(r_max[i + 1]-l_max[i-1]);
+            }
+            else {
+               ans.push_back(r_max[i + 1]-l_max[i-1]+1); 
+            }
+           
+             
+            
+        }
+        ans.push_back(len - l_max[len - 1]);
+        return ans;
+```
