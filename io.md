@@ -2,6 +2,21 @@
 ### C++ input out 【适应牛客网编程】
 
 
+- 每行固定数量输入
+- 出现报错先分析一下类型有没有问题
+
+```
+#include <iostream>
+using namespace std;
+
+int main() {
+    long long a, b;
+    while(cin >> a >> b) {
+        cout << a + b << endl;
+    }
+    return 0;
+}
+```
 
 
 ```
@@ -117,6 +132,42 @@ int main() {
             ans.clear();
         }
     }
+    return 0;
+}
+```
+#### 字符串中具有使用空格/'，'特殊符号划分
+- 通过`cin.get()`来获取输入流中的字符，进行判断
+```
+#include<iostream>
+#include<algorithm>
+#include<vector>
+using namespace std;
+
+int main() {
+    vector<string> res;
+    string tmp;
+    char c;
+    while (cin.get(c)) {
+        if (c == ',') {
+            res.emplace_back(tmp);
+            tmp.clear();
+        }
+        else if (c == '\n') {
+            res.emplace_back(tmp);
+            tmp.clear();
+            sort(res.begin(), res.end());
+            for (int i = 0; i < res.size() -1; i++){
+                cout << res[i] << ",";
+            }
+            cout << res[res.size() - 1] << endl;
+            res.clear();
+        }
+        else {
+            tmp.push_back(c);
+        }
+    }
+    
+    
     return 0;
 }
 ```
