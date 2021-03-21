@@ -6,7 +6,9 @@
   - [52. N皇后 2 [HARD]](#52-n皇后-2-hard)
   - [x. N皇后思考](#x-n皇后思考)
   - [17. 电话号码的字母组合 [Medium]](#17-电话号码的字母组合-medium)
-  - [](#)
+  - [22. 括号生成 [Medium]](#22-括号生成-medium)
+  - [78. 子集 [Medium]](#78-子集-medium)
+  - [79. 单词搜索 [Medium]](#79-单词搜索-medium)
 
 ## 回溯算法
 
@@ -298,4 +300,141 @@ public:
 };
 ```
 
-### 
+### 22. 括号生成 [Medium]
+- 针对左右括号的依赖，在进行回溯时添加依赖
+  - 当`left < n`时才，才能添加左括号
+  - 当`rigth < left` 时，才能添加右括号
+
+```
+class Solution {
+public:
+    int total = 0;
+    vector<string> ans;
+    vector<string> generateParenthesis(int n) {
+        if (!n)
+            return ans;
+        total = n*2;
+       // cout << total <<endl;
+        string path = "";
+        backTrack(path, 0, 0, 0);
+        return ans;
+    }
+    void backTrack(string& path, int step, int right, int left) {
+        if (step == total) {
+            ans.push_back(path);
+           // cout << "return" << endl;
+            return;
+        }
+        //cout << step << endl;
+        // 放置(的条件
+        if (left < total/2) {
+            path.push_back('(');
+            backTrack(path, step + 1, right, left + 1);
+            path.pop_back();
+        }
+        // 放）的条件
+        if (right < left) {
+            path.push_back(')');
+            backTrack(path, step + 1, right + 1, left);
+            path.pop_back();
+        }
+    }
+};
+```
+
+### 78. 子集 [Medium]
+- 计算数组的全部子集，要避免重复子集的出现
+- 本质上就是穷举，需要添加重复子集的处理 **相当于添加剪枝操作**
+  - 由于数组有序，只需要保证子集内同样有序，每次仅添加大于当前最大值的元素进入选择列表中即可 
+  - 由于每层都可以算是子集，所以每次回溯都能得到一个结果，需要每次都把结果添加到结果list中
+
+
+```
+class Solution {
+public:
+    vector<vector<int>> ans;
+    vector<vector<int>> subsets(vector<int>& nums) {
+        vector<int> subset;
+        backTrack(subset, nums);
+        return ans;
+    }
+    void backTrack(vector<int> subset, vector<int> nums) {
+        ans.push_back(subset);
+        if (subset.size() == nums.size()) {
+            return;
+        }
+        for (int i = 0; i < nums.size(); i++) {
+            if (subset.empty()) {
+                subset.push_back(nums[i]);
+                backTrack(subset, nums);
+                subset.pop_back();
+            }
+            else {
+                if (nums[i] > subset.back()) {
+                    subset.push_back(nums[i]);
+                    backTrack(subset, nums);
+                    subset.pop_back();
+                }
+            }
+
+        }
+    }
+};
+```
+
+### 79. 单词搜索 [Medium]
+- 需要借助辅助数组避免字母的重复使用，即剪枝
+- 首字母通过外层迭代循环来找到，然后进入回溯寻找当前位置下的结果
+- 时间复杂度 `O(MN*3^L)` 空间复杂度 `O(min(L,MN))` L : word长度
+
+
+```
+class Solution {
+public:
+    int direct[4][2] = {{-1, 0}, {1, 0}, {0, 1}, {0, -1}};
+    vector<vector<char>> visited;
+    bool exist(vector<vector<char>>& board, string word) {
+        if (word.empty() || board.empty()) {
+            return false;
+        }
+        visited.assign(board.begin(), board.end());
+        int row = 0;
+        int col = 0;
+        string cur;
+        cur.push_back(word[0]);
+        for (int i = 0; i < board.size(); i++) {
+            for (int j = 0; j < board[0].size(); j++) {
+                if (board[i][j] == word[0]) {
+                    visited[i][j] = '0';
+                    if (backTrack(board, cur, word, 1, i, j))
+                        return true;
+                    visited[i][j] = '1';
+                }
+            }
+        }
+        return false;
+    }
+    bool backTrack(vector<vector<char>>& board, string& cur, string& target, int index, int row, int col) {
+        if (cur.size() == target.size()) {
+            return true;
+        }
+        for (int i = 0; i < 4; i++) {
+            int _row = row + direct[i][0];
+            int _col = col + direct[i][1];
+            if (_row >=0 &&  _row < board.size() &&
+                _col >=0 &&  _col < board[0].size()) {
+                    if (board[_row][_col] == target[index] && visited[_row][_col] !='0') {
+                        cur.push_back(board[_row][_col]);
+                        visited[_row][_col] = '0';
+                        bool flag = backTrack(board, cur, target, index + 1, _row, _col);
+                        if (flag)
+                            return true;
+                        cur.pop_back();
+                        visited[_row][_col] = '1';
+                    }
+                }
+            }
+        return false;
+    }
+};
+```
