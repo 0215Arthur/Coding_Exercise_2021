@@ -9,6 +9,7 @@
   - [22. 括号生成 [Medium]](#22-括号生成-medium)
   - [78. 子集 [Medium]](#78-子集-medium)
   - [79. 单词搜索 [Medium]](#79-单词搜索-medium)
+  - [39. 组合数 [Medium] [ByteDance]](#39-组合数-medium-bytedance)
 
 ## 回溯算法
 
@@ -435,6 +436,49 @@ public:
                 }
             }
         return false;
+    }
+};
+```
+
+### 39. 组合数 [Medium] [ByteDance]
+- 给定一个**无重复元素的数组** candidates 和一个目标数 target ，找出 candidates 中所有可以使数字和为 target 的组合
+- 所有数字（包括 target）都是**正整数。 解集不能包含重复的组合**。
+- 解题关键：
+  - 循环结束的条件： **由于都是正整数，所以当curSum值大于target时必然要结束**
+  - 如何避免重复查找： **每次仅寻找大于等于当前组合数的候选值**
+  - 时间复杂度 O(N!) 空间复杂度O(N) 
+```
+#include<algorithm>
+class Solution {
+public:
+    vector<vector<int>> res;
+    vector<vector<int>> combinationSum(vector<int>& candidates, int target) {
+        sort(candidates.begin(), candidates.end());
+        if (candidates.empty())
+            return res;
+        vector<int> path;
+        backTrack(candidates, path, target, 0);
+        return res;
+    }
+    void backTrack(vector<int>& candidates, vector<int>& path, int target, int curSum) {
+        if (curSum > target) {
+            return;
+        }
+        if (curSum == target) {
+            res.push_back(path);
+            return;
+        }
+        for (int i = 0; i < candidates.size(); i++) {
+            if (!path.empty()) {
+                // 去重处理
+                if (path.back() > candidates[i])
+                    continue;
+            }
+            path.push_back(candidates[i]);
+            backTrack(candidates, path, target, curSum + candidates[i]);
+            path.pop_back();
+        }
+        return;
     }
 };
 ```
