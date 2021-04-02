@@ -1,12 +1,34 @@
 
 ![](./summary.png)
+[TOC]
+### 0. 冒泡排序
+- 特点：遍历进行对比交换，时间复杂度 O(N2), 稳定排序
+- 基本盘
 
-### 冒泡排序
-- 
+```
+void bubbleSort(vector<int>& arr) {
+    int L = arr.size();
+    for (int i = 0; i < L; i++) {
+        bool flag = false;
+        for (int j = 0; j < L - 1 -i; j++) {
+            if (arr[j] > arr[j+1]) {
+                swap(arr[j], arr[j+1]);
+                flag  = true;
+            }
+        }
+        cout << i << "th :";
+        for (int k = 0; k < L; k++) {
+            cout << arr[k] << " ";
+        }
+        cout << endl;
+        if (!flag)
+            break; 
+    }
+}
+```
 
-
-### 快速排序
-- 特点：左右交换，递归进行
+### 1.快速排序
+- 特点：左右交换，递归进行, **非稳定排序**
 - 空间复杂度 O(LogN)
 - 时间复杂度 O(NLogN)  最差情况下 O(N^2)
 ```
