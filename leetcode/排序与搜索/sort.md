@@ -1,6 +1,8 @@
 
 ![](./summary.png)
+动画图解：https://github.com/chefyuan/algorithm-base
 [TOC]
+
 ### 0. 冒泡排序
 - 特点：遍历进行对比交换，时间复杂度 O(N2), 稳定排序
 - 基本盘
