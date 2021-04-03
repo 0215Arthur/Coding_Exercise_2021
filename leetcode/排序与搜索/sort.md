@@ -146,12 +146,68 @@ void shellSort(vector<int>& arr) {
 }
 ```
  
- ### 5. 归并排序
+### 5. 归并排序
 
- ### 6. 堆排序
- 
+### 6. 堆排序 
+- HeapSort
+- 基于完全二叉树的结构：
+  - 大顶堆 [用于从小到大排序] 根节点的值大于两个子节点的值；
+  - 小顶堆 [用于从大到小排序] 根节点的值小于两个子节点的值
+- 排序过程：
+  - 1. 构建大顶堆
+  - 2. 取出arr[0]即顶元素跟尾部元素交换，然后对剩下的部分继续排序
+  - 重复步骤2，得到有序的数组
+
+```
+void adjustHead(vector<int> & arr, int Len, int index) {
+    int maxIdx = index;
+    int left = 2*index + 1;
+    int right = 2*index + 2;
+    // 进行节点管理
+    if (left < Len && arr[left] > arr[maxIdx]) maxIdx = left;
+    if (right < Len && arr[right] > arr[maxIdx]) maxIdx = right;
+    if (maxIdx != index) { // 调整子树
+        swap(arr[maxIdx], arr[index]);
+        adjustHead(arr, Len, maxIdx); 
+    } 
+}
+
+void heapSort(vector<int>& arr) {
+    int Len = arr.size();
+    // 构建大顶堆， 取所有非叶子节点进行遍历，自底而上
+    for(int i = Len/2 - 1 ; i >= 0; i--) {
+        adjustHead(arr, Len, i);
+    }
+    for (int i = 0; i < Len; i++) {
+        cout << arr[i] << " ";
+    }
+    cout << endl;
+    cout << "sort" <<endl;
+    for (int i = Len - 1; i > 0; i--) {
+        swap(arr[0],arr[i]);  // 把最大值调换到最后
+        adjustHead(arr, i, 0); // 从头开始调整堆
+        for (int i = 0; i < Len; i++) {
+            cout << arr[i] << " ";
+        }
+        cout << endl;
+    }
+}
+```
+- **基于优先队列**实现的堆排序
+- STL 的priority_queue更方便，优先队列的底层就是一个堆结构，在优先队列中，队首元素一定是当前队列中优先级最高的那一个。
+- 通过 top() 函数来访问队首元素（也可称为堆顶元素），也就是优先级最高的元素。
+
+```
+priority_queue< int, vector<int>, greater<int> > q;  // 小顶堆
+priority_queue< int, vector<int>, less<int> > q;     // 大顶堆
+```
+
+```
+
+```
 
 
+## 排序实战
 ### 386. 整数的字典序 [Medium] [ByteDance]
 - **字典序可以视为树结构**
 - 首个数字不能是0，但其他位置可以是0，
@@ -202,3 +258,137 @@ public:
     }
 };
 ```
+### 75. 颜色分类 [Medium]
+- 三种颜色 0 1 2 ， 要实现对这些颜色的原地排序 从0到1
+- 双指针法： left指针控制0， right指针控制2，进行交换，只需要遍历一次即可完成排序
+    - 时间复杂度： `O(N)`
+
+```
+class Solution {
+public:
+    void sortColors(vector<int>& nums) {
+        int left = 0;
+        int right = nums.size() - 1;
+        for (int i = 0; i <= right; i++){
+            if (nums[i] == 0) {
+                swap(nums[i], nums[left]);
+                left++;
+            }
+            if (nums[i] == 2) {
+                swap(nums[i], nums[right]);
+                right--;
+                i--;// 解题关键
+            }
+            // for (auto s : nums) {
+            //     cout << s << " ";
+            // }
+            // cout << endl;
+        }
+    }
+};
+```
+
+### 347. 前K个高频元素 [Medium]*
+- 计算出现次数最高的K个元素，返回对应的数组
+##### 基于快速排序的思想
+  - 核心是快速定位到K大元素的区间
+  - 因为每次寻找是大于/等于 pivot的元素，并移动到左区间
+  - 对于小于pivot的元素，本题中不用考虑，因此可以大幅降低时间开销
+  - 然后递归时同样仅考虑`K`大所在子区间，不用每个分区间都考虑
+  - 时间复杂度： O（N）
+
+```
+class Solution {
+public:
+    void quickSort(vector<pair<int, int>>& nums, int k, int left, int right, vector<int>& res) {
+        int start = left;
+        int pivot = nums[start].second;
+        for (int i = left + 1; i <= right; i++) {
+            if(nums[i].second > pivot) {
+                swap(nums[i], nums[left + 1]);
+                left++;
+            }
+        }
+        swap(nums[left],nums[start]);
+
+        // 判断递归方向，重要
+        if (k <= left - start) {
+            quickSort(nums, k, start, left - 1, res);
+        }
+        else {
+            for (int i = start; i <= left; i++){
+                res.push_back(nums[i].first);
+            }
+            if (k > left - start + 1) {
+                quickSort(nums, k - (left - start + 1), left + 1, right, res);
+            }
+        }
+    }
+    vector<int> topKFrequent(vector<int>& nums, int k) {
+        unordered_map<int, int> occurs;
+        for (int i = 0; i < nums.size(); i++) {
+            occurs[nums[i]]++;
+        }
+        vector<pair<int, int>> freqs;
+        for (unordered_map<int,int> ::iterator iter = occurs.begin(); iter != occurs.end(); iter++) {
+            freqs.push_back({iter->first, iter->second});
+        }
+        vector<int> ans;
+        quickSort(freqs, k, 0, freqs.size() - 1, ans );
+        return ans;
+
+    }
+};
+```
+
+##### 基于堆的思想
+- 要取最大的K个值，需要构建小顶堆，存储最大的K个值
+- 可以通过优先队列来实现堆结构，当队列长度等于K时
+  - 需要进行判断，判断当前堆顶元素是否小于目标值，若小于需要弹出堆
+  - 通过重载运算符来实现小顶堆
+
+```
+class Solution {
+public:
+
+    // static bool cmp(pair<int, int>& m, pair<int, int>& n) {
+    //         return m.second > n.second;
+    //     }
+
+    struct cmp {
+        bool operator()(const pair<int,int> a, const pair<int, int> b) {
+            
+            return a.second > b.second;
+        }
+    };
+    vector<int> topKFrequent(vector<int>& nums, int k) {
+        unordered_map<int, int> occurs;
+        for (int i = 0; i < nums.size(); i++) {
+            occurs[nums[i]]++;
+        }
+       priority_queue<pair<int,int>, vector<pair<int,int>>, cmp> q;
+        //priority_queue<pair<int, int>, vector<pair<int, int>>, decltype(&cmp)> q(cmp);
+
+       for (auto & [num, count] : occurs) {
+           if (q.size() == k) {
+               if (q.top().second < count) {
+                   q.pop();
+                   q.emplace(num,count);
+               }
+           }
+           else {
+               q.emplace(num,count);
+           }
+       } 
+
+       vector<int> ans;
+        while (!q.empty()) {
+            ans.push_back(q.top().first);
+            q.pop();
+        }
+        return ans;
+    }
+};
+```
+
+### 数组中的第K个最大元素
