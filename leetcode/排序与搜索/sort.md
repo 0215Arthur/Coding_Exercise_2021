@@ -157,7 +157,9 @@ void shellSort(vector<int>& arr) {
   - 1. 构建大顶堆
   - 2. 取出arr[0]即顶元素跟尾部元素交换，然后对剩下的部分继续排序
   - 重复步骤2，得到有序的数组
-
+- 时间复杂度 `O(nlogn)` 最好情况 `O(nlogn)` 最坏情况 `O(nlogn)`
+- 空间复杂度 `O(1)`
+- 非稳定排序
 ```
 void adjustHead(vector<int> & arr, int Len, int index) {
     int maxIdx = index;
@@ -391,4 +393,187 @@ public:
 };
 ```
 
-### 数组中的第K个最大元素
+### 215. 数组中的第K个最大元素 [Medium]*
+
+- 基于堆的排序方法
+  - 使用优先队列代替实现
+  - 构建最小堆
+  - 最后返回堆顶元素即可
+  - **时间复杂度： O(NlogN) 空间复杂度 `O(logN)` 递归处理堆的过程**
+```
+class Solution {
+public:
+    int findKthLargest(vector<int>& nums, int k) {
+        // 定义最小堆
+        priority_queue<int, vector<int>, greater<int> > q;
+        for (int i = 0; i < nums.size(); i++) {
+            if (q.size() == k) {
+                if (q.top() < nums[i]) {
+                    q.pop();
+                    q.push(nums[i]);
+                }
+            } else{
+                q.push(nums[i]);
+            }
+        }
+        
+        return q.top();
+       
+    }
+};
+```
+- 基于快速排序的思路
+  - 与上一题思路基本一致，只要在指定区域进行搜索即可
+  - 时间复杂度: O(N) 空间复杂度:`O(logN)` 递归栈的深度
+
+```
+class Solution {
+public:
+    void quickSort(vector<int>& nums, int left, int right, int k, vector<int>& res) {
+        int pivot = nums[left];
+        int start = left;
+        for (int i = left + 1; i <= right; i++) {
+            if (nums[i] > pivot) {
+                swap(nums[i], nums[left + 1]);//
+                left++;
+            }
+        }
+        swap(nums[left], nums[start]);
+        if (k <= left - start ) {//
+            quickSort(nums, start , left - 1, k, res); // 在左区间内
+        }
+        else {
+            for (int i = start; i <= left; i++) {
+                res.push_back(nums[i]);//存储结果
+            }
+            // k = left -start + 1时 即pivot为目标值
+            if (k > left - start + 1) { // i ~ i+k : （k + 1）个数字 
+                quickSort(nums, left + 1 , right, k - (left - start + 1), res);
+            }
+        }
+    }
+    int findKthLargest(vector<int>& nums, int k) {
+        // 定义最小堆
+        vector<int> ans;
+        quickSort(nums, 0, nums.size() - 1, k, ans);
+        return ans.back();
+       
+    }
+};
+```
+
+### 56. 合并区间 [medium]
+- 给出区间的集合，合并重叠的区间
+- 先进行排序，然后进行遍历合并
+  - 时间复杂度 O(NlogN) 空间复杂度
+  - 使用运算符重载的方式定义二维数组的排序
+```
+class Solution {
+public:
+    struct cmp{
+        bool operator()(vector<int>& a,  vector<int>& b) {
+            return a[0] < b[0];
+        }
+    };
+    vector<vector<int>> merge(vector<vector<int>>& intervals) {
+        sort(intervals.begin(), intervals.end(), cmp());
+        vector<vector<int>> ans;
+        if (intervals.empty())
+            return ans;
+        int l_min = intervals[0][0];
+        int r_max = intervals[0][1];
+        for (int i = 1; i < intervals.size(); i++) {
+            if (r_max < intervals[i][0])
+            {
+                ans.push_back(vector<int>{l_min, r_max});
+                r_max = intervals[i][1];
+                l_min = intervals[i][0];
+            }
+            else {
+                // 取当前对比的最大值
+                r_max = max(intervals[i][1], r_max);
+            }
+        }
+        ans.push_back(vector<int>{l_min, r_max});
+        return ans;
+    }
+};
+```
+
+### 240. 搜索二维矩阵 [Medium]
+- 二分查找法：
+- 在对角线开始向下和向右的搜索
+
+```
+class Solution {
+public:
+    int rows = 0;
+    int cols = 0;
+    bool binarySearch(vector<vector<int>>& matrix, int target, int row) {
+        //cout << "binarySearch" << endl;
+        int left = row;
+        int right = rows - 1;
+        int col = row;
+        while (left <= right) {
+            //cout <<"l : " << left << " r :" << right << endl; 
+            int mid = left + (right - left)/2;
+            if (matrix[mid][col] == target) 
+                return true;
+            else if (matrix[mid][col] < target) {
+                left = mid + 1;
+            }
+            else if (matrix[mid][col] > target) {
+                right = mid - 1;
+            }
+        }
+        int low = row;
+        int high = cols - 1;
+        while (low <= high) {
+            //cout <<"low : " << low << " high :" << high << endl;
+            int mid = low + (high - low)/2;
+            if (matrix[row][mid] == target) 
+                return true;
+            else if (matrix[row][mid] < target) {
+                low = mid + 1;
+            }
+            else if (matrix[row][mid] > target) {
+                 high = mid - 1;
+            }
+        }
+        return false;
+    }
+    bool searchMatrix(vector<vector<int>>& matrix, int target) {
+        rows = matrix.size();
+        cols = matrix[0].size();
+        for (int i = 0; i < min(rows,cols); i ++) {
+            if (binarySearch(matrix, target, i))
+                return true;
+        }
+        return false;
+    }
+};
+```
+- **进阶做法**： 由于行和列都是有序的，可以将这个矩阵看作是一个搜索二叉树，
+  - **将左下角元素作为根节点，向上都是小于根节点的元素，向右都是大于根节点的元素**
+- 时间复杂度：`O(m+n)`
+```
+class Solution {
+public:
+
+    bool searchMatrix(vector<vector<int>>& matrix, int target) {
+        int row = matrix.size() - 1;
+        int col = 0;
+        while(row >=0 && col < matrix[0].size()) {
+            if (matrix[row][col] == target) 
+                return true;
+            else if (matrix[row][col] > target) {
+                row--; // 向小的方向移动
+            }
+            else if (matrix[row][col] < target) {
+                col++;
+            }
+        }
+        return false;
+    }
+};
+```
