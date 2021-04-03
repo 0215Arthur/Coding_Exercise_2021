@@ -582,3 +582,76 @@ public:
     }
 };
 ```
+
+### 371. 利用位运算实现两整数之和 [Medium]
+- 不能使用 + - 运算，因此可以想到使用位运算
+- **位运算中的异或/与操作的特性**：
+  - `^` 异或运算,可以**表示二进制下两个位置上的加和的无进位表示**
+  - `&` 与运算，能够反映加和的进位情况，**即有无进位出现0/1**
+- 因此总结上面的操作逻辑：
+  - 第一步：相加各位的值，不算进位，得到010，二进制每位相加就相当于各位做异或操作，101^111。
+  - 第二步：计算进位值，相当于各位进行与操作得到101，再向左移一位得到1010，(101&111)<<1。
+  - 第三步重复上述两步 
+  - **当没有进位产生时即停止操作**
+  - 与十进制下的加法逻辑一致
+
+```
+class Solution {
+public:
+    int getSum(int a, int b) {
+        while (b) {
+            int c = a^b; // 异或操作 获取无进位加法的结果
+            b = (unsigned int)(a&b)<<1;
+            a = c;
+        }
+        return a;
+
+    }
+};
+```
+
+### 202. 快乐数
+- *不是很快乐。。。。。*
+- 解题关键： 如何解决无限循环
+  - 在数的不断拆分中，可能出现循环的环结构，使用哈希表进行数的重复检测即可
+- 时间复杂度 O(logN) 空间复杂度 O(logN)
+
+```
+class Solution {
+public:
+    int count(vector<int> arr) {
+        int sum = 0;
+        for (auto s : arr) {
+            sum += s*s;
+        }
+        return sum;
+    }
+    
+    bool isHappy(int n) {
+        set<int> numbers;
+        vector<int> w;
+        numbers.insert(n);
+        while (true) {
+            while(n) {
+                int t = n%10;
+                w.push_back(t);
+                n = n/10;
+            }
+            n = count(w);
+            if (n == 1)
+                return true;
+            w.clear();
+            if (numbers.count(n)) {
+                return false;
+            }
+            numbers.insert(n);
+        }
+    }
+};
+```
+
+### 172. 阶乘后的0的个数
+- 数学题，如何避免阶乘的低效率？
+- 把问题转换为计算因子5的数量
+
+https://leetcode-cn.com/problems/factorial-trailing-zeroes/solution/liang-dao-lei-si-de-jie-cheng-ti-mu-xiang-jie-by-l/
