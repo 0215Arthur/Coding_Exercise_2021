@@ -1,6 +1,7 @@
 
 ![](./summary.png)
 动画图解：https://github.com/chefyuan/algorithm-base
+https://zhuanlan.zhihu.com/p/60152722
 [TOC]
 
 ### 比较排序 v.s. 非比较排序
@@ -147,6 +148,55 @@ void shellSort(vector<int>& arr) {
 ```
  
 ### 5. 归并排序
+- **基于分治思路**
+- 建立在归并操作上的一种有效的排序算法。该算法是采用分治法（Divide and Conquer）的一个非常典型的应用。归并排序是一种稳定的排序方法。将已有序的子序列合并，得到完全有序的序列；即先使每个子序列有序，再使子序列段间有序。若将两个有序表合并成一个有序表，称为2-路归并
+  - 时间复杂度： 稳定在`O(NLogN)` 空间复杂度 `O(N)`
+  - 稳定排序
+
+
+```
+void merge(vector<int>& arr, int left, int mid, int right) {
+    vector<int> tmp;
+    int i = left;
+    int j = mid + 1;
+    while(i <= mid && j <= right) {
+        if (arr[i] > arr[j]) {
+            tmp.push_back(arr[j]);
+            j++;
+        }
+        else {
+            tmp.push_back(arr[i]);
+            i++;
+        }
+    }
+    // 把没有遍历完的部分继续进行遍历
+    while (i<=mid) {
+        tmp.push_back(arr[i]);
+        i++;
+    }
+    while (j <= right) {
+        tmp.push_back(arr[j]);
+        j++;
+    }
+    for (int i = 0; i <tmp.size(); i++) {
+        arr[left++] = tmp[i];
+    }
+    cout << "after merge: "; 
+    for (int i = 0; i < arr.size(); i++) {
+        cout << arr[i] << " ";
+    }
+    cout << endl;
+
+}
+
+void mergeSort(vector<int>& arr, int left, int right) {
+    if (left >= right) return;
+    int mid = left + (right - left) / 2;
+    mergeSort(arr, left, mid);
+    mergeSort(arr, mid + 1, right);
+    merge(arr, left, mid, right);
+}
+```
 
 ### 6. 堆排序 
 - HeapSort
@@ -154,7 +204,7 @@ void shellSort(vector<int>& arr) {
   - 大顶堆 [用于从小到大排序] 根节点的值大于两个子节点的值；
   - 小顶堆 [用于从大到小排序] 根节点的值小于两个子节点的值
 - 排序过程：
-  - 1. 构建大顶堆
+  - 1. 构建大顶堆 **自底而上地对节点进行调整**
   - 2. 取出arr[0]即顶元素跟尾部元素交换，然后对剩下的部分继续排序
   - 重复步骤2，得到有序的数组
 - 时间复杂度 `O(nlogn)` 最好情况 `O(nlogn)` 最坏情况 `O(nlogn)`

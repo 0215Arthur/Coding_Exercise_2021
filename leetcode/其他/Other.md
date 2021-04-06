@@ -653,5 +653,134 @@ public:
 ### 172. 阶乘后的0的个数
 - 数学题，如何避免阶乘的低效率？
 - 把问题转换为计算因子5的数量
+  - `5 10 15 20 25` 中分别有 `1,1,1,1，2`个5因子
+  - 最后的结果可以计算除以`5 25 125...`的数量和
 
 https://leetcode-cn.com/problems/factorial-trailing-zeroes/solution/liang-dao-lei-si-de-jie-cheng-ti-mu-xiang-jie-by-l/
+
+```
+class Solution {
+public:
+    int trailingZeroes(int n) {
+        int ans = 0;
+        int factor = 5;
+        while (factor <= n) {
+            ans += n / factor;
+            factor *= 5;
+        }
+        return ans;
+    }
+};
+```
+
+### 793. 阶乘函数后K个零
+- 给出目标值K，计算有多少个阶乘函数有K个尾零
+- 利用上题中的解法可以得到n!的尾零个数
+- 然后基于二分查找的思想，进行大数搜索，搜索出阶乘尾0等于K的左右边界
+  - 因为这个阶乘函数的尾零个数是一个连续上升的函数，因此可以使用二分查找进行
+  - 时间复杂度 O((logN)^2) 
+
+```
+class Solution {
+public:
+    long travZeros(long n) {
+        long factor = 5;
+        long ans = 0;
+        while (factor <= n) {
+            ans += n/factor;
+            factor *= 5;
+        }
+        return ans;
+    }        
+    
+    int binarySearch(int K, bool left_flag) {
+        long left = 0;
+        long right = LONG_MAX;
+        while (left <= right) {
+            long mid = left + (right - left)/2;
+            cout << mid << " " << travZeros(mid) << endl;
+
+            if (travZeros(mid) == K) {
+                if (left_flag)
+                    right = mid - 1;
+                else 
+                    left = mid + 1;
+            }
+            else if (travZeros(mid) < K) {
+                left = mid + 1;
+            }
+            else if (travZeros(mid) > K) {
+                right = mid - 1;
+            }
+        }
+        return left_flag ? left : right;
+    }
+
+    int preimageSizeFZF(int K) {
+        return binarySearch(K, false) - binarySearch(K, true) + 1;
+    }
+};
+```
+
+
+### 169. 多数元素 
+- 返回数组中出现次数多于`n/2`的元素
+- 基础做法：排序然后直接根据索引取元素即可
+- 升级：使用哈希表，计算各个元素的出现频率，然后取最大频率对应的值即可
+- 投票法：
+  > 假设数组中每个不同的数字就代表一个国家，而数字的个数就代表这个国家的人数，他们在一起混战，就是每两个两个同归于尽。我们就可以知道那个人数大于数组长度一半的肯定会获胜。
+  > 就算退一万步来说，其他的所有人都来攻击这个人数最多的国家，他们每两个两个同归于尽，最终剩下的也是那个众数
+
+```
+class Solution {
+public:
+    int majorityElement(vector<int>& nums) {
+        int candidate = nums[0];
+        int count = 1;
+        for (int i = 1; i < nums.size(); i++) {
+            if (count == 0) {
+                count ++;
+                candidate = nums[i];
+            }
+            else if (candidate == nums[i]) {
+                count++;
+            }
+            else {
+                count--;
+            }
+        }
+        return candidate;
+    }
+};
+```
+
+### 621. 任务调度器 [Medium]
+- 给出任务序列和同任务冷却时间，找出最小的任务序列完成时间
+- 核心： 任务完成主要还是取决于次数最多的任务，**要根据次数最多的任务进行排期**
+  - 根据冷却时间构成任务轮次，最后再加上跟次数最多的任务的任务数量即得到最终结果
+  - 需要考虑临界情况，如**没有冷却时间**，对应的值可以调整一下最后取任务列表长度和目标值的最大值
+
+```
+class Solution {
+public:
+    int leastInterval(vector<char>& tasks, int n) {
+        vector<int> bins(26);
+        for (int i = 0; i < tasks.size(); i++) {
+            bins[tasks[i] - 'A']++;
+        }
+        sort(bins.rbegin(), bins.rend());
+        int maxBin = bins[0];
+        int cur = (maxBin - 1)*(n + 1);
+        int cnt = 0;
+        for (int i = 0; i < bins.size(); i++) {
+            if (bins[i] >= maxBin)
+                cnt++;
+            if (bins[i] == 0)
+                break;
+        }
+        //cout << cnt << endl;
+        int Len = tasks.size();
+        return max(Len, cnt + cur);
+    }
+};
+```
