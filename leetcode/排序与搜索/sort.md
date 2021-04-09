@@ -152,6 +152,7 @@ void shellSort(vector<int>& arr) {
 - 建立在归并操作上的一种有效的排序算法。该算法是采用分治法（Divide and Conquer）的一个非常典型的应用。归并排序是一种稳定的排序方法。将已有序的子序列合并，得到完全有序的序列；即先使每个子序列有序，再使子序列段间有序。若将两个有序表合并成一个有序表，称为2-路归并
   - 时间复杂度： 稳定在`O(NLogN)` 空间复杂度 `O(N)`
   - 稳定排序
+  - 适用场景：**数据量大，对稳定性有一定要求**
 
 
 ```
@@ -483,7 +484,7 @@ public:
         int pivot = nums[left];
         int start = left;
         for (int i = left + 1; i <= right; i++) {
-            if (nums[i] > pivot) {
+            if (nums[i] > pivot) { // 从大到小排序
                 swap(nums[i], nums[left + 1]);//
                 left++;
             }
@@ -508,6 +509,40 @@ public:
         quickSort(nums, 0, nums.size() - 1, k, ans);
         return ans.back();
        
+    }
+};
+```
+
+- **自定义堆结构，构建小顶堆，取堆顶作为目标值**
+    - s1：递归建堆
+    - s2: 对于堆外元素，当其大于堆顶元素时进行堆调整
+    - s3 返回堆顶
+```
+class Solution {
+public:
+    void adjustHeap(vector<int>& nums, int length, int index) {
+        int minIdx = index;
+        if (2*index + 1 < length && nums[2*index + 1] < nums[minIdx])
+            minIdx = 2*index + 1;
+        if (2*index + 2 < length && nums[2*index + 2] < nums[minIdx])
+            minIdx = 2*index + 2;
+        // 调整子树
+        if (minIdx != index) {
+            swap(nums[index], nums[minIdx]);
+            adjustHeap(nums,length,minIdx); 
+        }
+    }
+    int findKthLargest(vector<int>& nums, int k) {
+        for (int i = k/2 - 1; i >=0; i--) {
+            adjustHeap(nums, k, i);
+        }
+        for (int i = k; i < nums.size(); i++) {
+            if (nums[i] > nums[0]) {
+                nums[0] = nums[i];
+                adjustHeap(nums,k,0);
+            }
+        }
+        return nums[0];
     }
 };
 ```
