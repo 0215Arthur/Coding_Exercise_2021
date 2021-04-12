@@ -47,6 +47,9 @@ void bubbleSort(vector<int>& arr) {
 - 特点：左右交换，递归进行, **非稳定排序**
 - 空间复杂度 O(LogN)
 - 时间复杂度 O(NLogN)  最差情况下 O(N^2)
+  - **时间复杂度与划分点选择相关，如果选中的划分点可以平分序列，那么总划分次数就会是logn**
+  - **如果每次选中的划分点为最小/最大值，那么总有一个空区间，剩下的部分等价于线性处理，时间复杂度为O(n^2)**
+  - 优化方法为：通常采用“三者值取中”方法，即比较r[low].key、r[high].key与r[(low+high)/2].key，**取三者中关键字为中值的元素为中间数**
 ```
 int Parition( vector<int>& arr, int left, int right) {
     int pivot = arr[left];
