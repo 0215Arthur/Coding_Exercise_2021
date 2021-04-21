@@ -90,6 +90,74 @@ void quickSort(vector<int>& arr, int left, int right) {
 }
 ```
 
+
+- **主元优化实例： 采用随机选取主元**
+
+```
+class Solution {
+public:
+    int partition(vector<int>& nums, int left, int right) {
+        int start = left;
+        int pivot = nums[start];
+        // cout << left << " " << right << " " << pivot << endl;
+   
+        while (left < right) {
+   
+            while ((left < right) && (nums[right] >= pivot)) {
+                right--;
+            }
+  
+            while (left < right && nums[left] <= pivot) {
+                left++;
+            }
+  
+            if (left < right) {
+                swap(nums[left], nums[right]);
+            }
+        }
+        swap(nums[left], nums[start]);
+        return left;
+    }
+    // ***** 关键
+    int randomized_partition(vector<int>& nums, int left, int right) {
+        int i = rand() % (right - left + 1) + left; // 随机选一个作为我们的主元
+        swap(nums[left], nums[i]); // 交换随机元
+        return partition(nums, left, right);
+    }
+    void quickSort(vector<int>& nums, int left, int right) {
+        if (left >= right) {
+            return;
+        }
+        int p = randomized_partition(nums, left, right);
+        quickSort(nums, left, p - 1);
+        quickSort(nums, p + 1, right);
+    }
+    vector<int> sortArray(vector<int>& nums) {
+        quickSort(nums, 0, nums.size() - 1);
+        return nums;
+    }
+};
+```
+
+- **精简版**
+
+```
+    void quick_sort(vector<int>& nums, int l, int r){
+        if(l < r){
+            int i = l, j = r;
+            while(i < j){
+                while(i < j && nums[j] >= nums[l]) --j;
+                while(i < j && nums[i] <= nums[l]) ++i;
+                swap(nums[i], nums[j]);
+            }
+            swap(nums[l], nums[i]);
+            quick_sort(nums, l, i - 1);
+            quick_sort(nums, i + 1, r);
+        }
+    }
+```
+
+
 ### 2. 选择排序
 
 原理： 每次遍历选择最小/大的一个，n次遍历得到每个位置上的值，时间复杂度稳定在`O(N^2)`
