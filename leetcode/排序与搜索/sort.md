@@ -11,8 +11,6 @@
     - [6. 堆排序](#6-堆排序)
 - [延伸题目](#延伸题目)
   - [56. 合并区间 [medium]](#56-合并区间-medium)
-  - [75. 颜色分类 [Medium]](#75-颜色分类-medium)
-  - [剑指21. 调整数组顺序使奇数位于偶数前面](#剑指21-调整数组顺序使奇数位于偶数前面)
   - [剑指40. 最小的k个数 [*]](#剑指40-最小的k个数-)
   - [215. 数组中的第K个最大元素 [Medium]*](#215-数组中的第k个最大元素-medium)
   - [347. 前K个高频元素 [Medium]*](#347-前k个高频元素-medium)
@@ -418,60 +416,6 @@ public:
         }
         ans.push_back(vector<int>{l_min, r_max});
         return ans;
-    }
-};
-```
-### 75. 颜色分类 [Medium]
-- 三种颜色 0 1 2 ， 要实现对这些颜色的原地排序 从小到大排列
-
-
-- 双指针法： **left指针控制0， right指针控制2，进行交换，只需要遍历一次即可完成排序**
-  - 遇到0，与left进行交换，即往左甩
-  - 遇到2，则与right进行交换，往右甩
-  - `left < right`； 
-    - 技巧点： 当进行right交换时，交换完成后要回退一步，保证避免遗漏对元素的处理，*可能将2又换到当前位置*
-- 时间复杂度： `O(N)`
-
-- 关键点： **双指针** **一次遍历**
-
-```
-class Solution {
-public:
-    void sortColors(vector<int>& nums) {
-        int left = 0;
-        int right = nums.size() - 1;
-        for (int i = 0; i <= right; i++){
-            if (nums[i] == 0) {
-                swap(nums[i], nums[left]);
-                left++;
-            }
-            if (nums[i] == 2) {
-                swap(nums[i], nums[right]);
-                right--;
-                i--;// 解题关键
-            }
-        }
-    }
-};
-```
-
-### 剑指21. 调整数组顺序使奇数位于偶数前面
-> 使得所有奇数位于数组的前半部分，所有偶数位于数组的后半部分。
-
-- 跟LC75题思路相似，原地移动即可，设置left指针，将所有奇数向left指针位置交换即可
-- 时间复杂度 O(N)
-```
-class Solution {
-public:
-    vector<int> exchange(vector<int>& nums) {
-        int left = 0;
-        for (int i = 0; i < nums.size(); i++) {
-            if (nums[i] % 2 ) {
-                swap(nums[left], nums[i]);
-                left++;
-            }
-        }
-        return nums;
     }
 };
 ```
