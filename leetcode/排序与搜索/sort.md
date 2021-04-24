@@ -1,4 +1,4 @@
-
+[TOC]
 排序算法
 -------
 面试中的基本盘，考察对基础/常用排序算法的理解和应用；也是面试八股中的重要内容。
@@ -7,7 +7,7 @@
 **发散延伸**： 字典序等
 
 
-[TOC]
+
 
 ![](./summary.png)
 动画图解：https://github.com/chefyuan/algorithm-base
