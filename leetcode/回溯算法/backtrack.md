@@ -1,15 +1,16 @@
 - [回溯算法](#回溯算法)
   - [基本思想](#基本思想)
   - [套路框架](#套路框架)
+  - [17. 电话号码的字母组合 [Medium]](#17-电话号码的字母组合-medium)
+  - [22. 括号生成 [Medium]](#22-括号生成-medium)
+  - [39. 组合数 [Medium] [ByteDance]](#39-组合数-medium-bytedance)
   - [46. 全排列 Permutations [MEDIUM]](#46-全排列-permutations-medium)
   - [51. N皇后 I [HARD]](#51-n皇后-i-hard)
   - [52. N皇后 2 [HARD]](#52-n皇后-2-hard)
   - [x. N皇后思考](#x-n皇后思考)
-  - [17. 电话号码的字母组合 [Medium]](#17-电话号码的字母组合-medium)
-  - [22. 括号生成 [Medium]](#22-括号生成-medium)
   - [78. 子集 [Medium]](#78-子集-medium)
   - [79. 单词搜索 [Medium]](#79-单词搜索-medium)
-  - [39. 组合数 [Medium] [ByteDance]](#39-组合数-medium-bytedance)
+  - [93. 复原IP地址 [美团]](#93-复原ip地址-美团)
 
 ## 回溯算法
 
@@ -34,6 +35,137 @@ def backtrack (路径，选择列表)：
 
 
 *****
+
+
+### 17. 电话号码的字母组合 [Medium]
+- 回溯法解题的思路总体属于中等偏上的难度
+- 跟前面分析一致，需要先确定选择列表和路径列表，以及make choice的规则
+- 时间复杂度： O（N!） 空间复杂度O(N)
+```
+class Solution {
+public:
+    unordered_map<char, string> numDigits;
+    string digitsTarget;
+    vector<string> ans;
+    vector<string> letterCombinations(string digits) {
+        if (digits.empty()) 
+            return ans;
+        numDigits.insert({'2',"abc"});
+        numDigits.insert({'3',"def"});
+        numDigits.insert({'4',"ghi"});
+        numDigits.insert({'5',"jkl"});
+        numDigits.insert({'6',"mno"});
+        numDigits.insert({'7',"pqrs"});
+        numDigits.insert({'8',"tuv"});
+        numDigits.insert({'9',"wxyz"});
+        digitsTarget = digits;
+        string path = "";
+        backTrack(path,0);
+        return ans;
+    }
+    void backTrack(string& path, int num) {
+
+        if (path.size() == digitsTarget.size()) {
+            ans.push_back(path);
+            return;
+        }
+        string digitCur = numDigits[digitsTarget[num]];
+        for (auto s: digitCur) {
+             path.push_back(s);
+             backTrack(path, num + 1);
+             path.pop_back();
+        }
+    }
+};
+```
+
+### 22. 括号生成 [Medium]
+- 针对左右括号的依赖，在进行回溯时添加依赖
+  - 当`left < n`时才，才能添加左括号
+  - 当`rigth < left` 时，才能添加右括号
+
+```
+class Solution {
+public:
+    int total = 0;
+    vector<string> ans;
+    vector<string> generateParenthesis(int n) {
+        if (!n)
+            return ans;
+        total = n*2;
+       // cout << total <<endl;
+        string path = "";
+        backTrack(path, 0, 0, 0);
+        return ans;
+    }
+    void backTrack(string& path, int step, int right, int left) {
+        if (step == total) {
+            ans.push_back(path);
+           // cout << "return" << endl;
+            return;
+        }
+        //cout << step << endl;
+        // 放置(的条件
+        if (left < total/2) {
+            path.push_back('(');
+            backTrack(path, step + 1, right, left + 1);
+            path.pop_back();
+        }
+        // 放）的条件
+        if (right < left) {
+            path.push_back(')');
+            backTrack(path, step + 1, right + 1, left);
+            path.pop_back();
+        }
+    }
+};
+```
+
+### 39. 组合数 [Medium] [ByteDance]
+- 给定一个**无重复元素的数组** candidates 和一个目标数 target ，找出 candidates 中所有可以使数字和为 target 的组合
+- 所有数字（包括 target）都是**正整数。 解集不能包含重复的组合**。
+- 解题关键：
+  - 循环结束的条件： **由于都是正整数，所以当curSum值大于target时必然要结束**
+  - 如何避免重复查找： **每次仅寻找大于等于当前组合数的候选值**
+  - 时间复杂度 O(N!) 空间复杂度O(N) 
+```c++
+#include<algorithm>
+class Solution {
+public:
+    vector<vector<int>> res;
+    vector<vector<int>> combinationSum(vector<int>& candidates, int target) {
+        sort(candidates.begin(), candidates.end());
+        if (candidates.empty())
+            return res;
+        vector<int> path;
+        backTrack(candidates, path, target, 0);
+        return res;
+    }
+    void backTrack(vector<int>& candidates, vector<int>& path, int target, int curSum) {
+        if (curSum > target) {
+            return;
+        }
+        if (curSum == target) {
+            res.push_back(path);
+            return;
+        }
+        for (int i = 0; i < candidates.size(); i++) {
+            if (!path.empty()) {
+                // 去重处理
+                if (path.back() > candidates[i])
+                    continue;
+            }
+            path.push_back(candidates[i]);
+            backTrack(candidates, path, target, curSum + candidates[i]);
+            path.pop_back();
+        }
+        return;
+    }
+};
+```
+
+
+
 ### 46. 全排列 Permutations [MEDIUM]
 - 模板的标准使用，指定path和状态集合(即选择集合)
 - 需要判断当前选择的path是否有重复
@@ -259,89 +391,6 @@ public:
 };
 ```
 
-### 17. 电话号码的字母组合 [Medium]
-- 回溯法解题的思路总体属于中等偏上的难度
-- 跟前面分析一致，需要先确定选择列表和路径列表，以及make choice的规则
-- 时间复杂度： O（N!） 空间复杂度O(N)
-```
-class Solution {
-public:
-    unordered_map<char, string> numDigits;
-    string digitsTarget;
-    vector<string> ans;
-    vector<string> letterCombinations(string digits) {
-        if (digits.empty()) 
-            return ans;
-        numDigits.insert({'2',"abc"});
-        numDigits.insert({'3',"def"});
-        numDigits.insert({'4',"ghi"});
-        numDigits.insert({'5',"jkl"});
-        numDigits.insert({'6',"mno"});
-        numDigits.insert({'7',"pqrs"});
-        numDigits.insert({'8',"tuv"});
-        numDigits.insert({'9',"wxyz"});
-        digitsTarget = digits;
-        string path = "";
-        backTrack(path,0);
-        return ans;
-    }
-    void backTrack(string& path, int num) {
-
-        if (path.size() == digitsTarget.size()) {
-            ans.push_back(path);
-            return;
-        }
-        string digitCur = numDigits[digitsTarget[num]];
-        for (auto s: digitCur) {
-             path.push_back(s);
-             backTrack(path, num + 1);
-             path.pop_back();
-        }
-    }
-};
-```
-
-### 22. 括号生成 [Medium]
-- 针对左右括号的依赖，在进行回溯时添加依赖
-  - 当`left < n`时才，才能添加左括号
-  - 当`rigth < left` 时，才能添加右括号
-
-```
-class Solution {
-public:
-    int total = 0;
-    vector<string> ans;
-    vector<string> generateParenthesis(int n) {
-        if (!n)
-            return ans;
-        total = n*2;
-       // cout << total <<endl;
-        string path = "";
-        backTrack(path, 0, 0, 0);
-        return ans;
-    }
-    void backTrack(string& path, int step, int right, int left) {
-        if (step == total) {
-            ans.push_back(path);
-           // cout << "return" << endl;
-            return;
-        }
-        //cout << step << endl;
-        // 放置(的条件
-        if (left < total/2) {
-            path.push_back('(');
-            backTrack(path, step + 1, right, left + 1);
-            path.pop_back();
-        }
-        // 放）的条件
-        if (right < left) {
-            path.push_back(')');
-            backTrack(path, step + 1, right + 1, left);
-            path.pop_back();
-        }
-    }
-};
-```
 
 ### 78. 子集 [Medium]
 - 计算数组的全部子集，要避免重复子集的出现
@@ -439,46 +488,67 @@ public:
     }
 };
 ```
+### 93. 复原IP地址 [美团]
+> 给定一个只包含数字的字符串，用以表示一个 IP 地址，返回所有可能从 s 获得的 有效 IP 地址 。你可以按任何顺序返回答案。
+有效 IP 地址 正好由四个整数（**每个整数位于 0 到 255 之间组成，且不能含有前导 0**)
 
-### 39. 组合数 [Medium] [ByteDance]
-- 给定一个**无重复元素的数组** candidates 和一个目标数 target ，找出 candidates 中所有可以使数字和为 target 的组合
-- 所有数字（包括 target）都是**正整数。 解集不能包含重复的组合**。
-- 解题关键：
-  - 循环结束的条件： **由于都是正整数，所以当curSum值大于target时必然要结束**
-  - 如何避免重复查找： **每次仅寻找大于等于当前组合数的候选值**
-  - 时间复杂度 O(N!) 空间复杂度O(N) 
-```
-#include<algorithm>
+
+- 回溯法解题
+- 需要考虑比较多的限制：
+  - 所有字符都要用上，回溯才能结束
+  - 每段数字要合法， 当出现非法数字段时就要停止回溯循环
+  - 对于0数字，如果出现在前导位置（即某段的第一个位置）那么该段只能是0
+- 时间复杂度： $3^{SEG_COUNT}×∣s∣$
+
+```c++
 class Solution {
 public:
-    vector<vector<int>> res;
-    vector<vector<int>> combinationSum(vector<int>& candidates, int target) {
-        sort(candidates.begin(), candidates.end());
-        if (candidates.empty())
-            return res;
-        vector<int> path;
-        backTrack(candidates, path, target, 0);
-        return res;
-    }
-    void backTrack(vector<int>& candidates, vector<int>& path, int target, int curSum) {
-        if (curSum > target) {
-            return;
-        }
-        if (curSum == target) {
-            res.push_back(path);
-            return;
-        }
-        for (int i = 0; i < candidates.size(); i++) {
-            if (!path.empty()) {
-                // 去重处理
-                if (path.back() > candidates[i])
-                    continue;
+    vector<string> ans;
+    void backTrack(string& s, int segId, int segStart, vector<string>& paths) {
+        if (segId == 4) {
+            // 临界情况判断： 当所有字符都用上才可以
+            if (segStart == s.size()) {
+                string tmp = "";
+                for (auto p : paths) {
+                    if (tmp.empty())
+                        tmp += p;
+                    else {
+                        tmp += ".";
+                        tmp += p;
+                    }
+                }
+                ans.push_back(tmp);   
             }
-            path.push_back(candidates[i]);
-            backTrack(candidates, path, target, curSum + candidates[i]);
-            path.pop_back();
+            return;
         }
-        return;
+        // 当已经到达尾部
+        if (segStart >= s.size()) {
+            return;
+        }
+        // 如果前导为0的话，当前段只能为0
+        if (s[segStart] == '0') {
+            paths.push_back("0");
+            backTrack(s, segId + 1, segStart + 1, paths);
+            paths.pop_back();
+        }
+        // 标准的回溯， 需要判断是否在合法区间，超出合法区间就停止
+        int num = 0;
+        for (int i = segStart; i < s.size(); i++) {
+            num = num * 10 + (s[i] - '0');
+            if (num <= 255 && num > 0) {
+                paths.push_back(to_string(num));
+                backTrack(s, segId + 1, i + 1, paths);
+                paths.pop_back();
+            } 
+            else {
+                break;
+            }
+        }
+    }
+    vector<string> restoreIpAddresses(string s) {
+        vector<string> path;
+        backTrack(s, 0, 0, path);
+        return ans;
     }
 };
 ```
