@@ -1,125 +1,36 @@
 
 ### 384. 数组打乱shuffle
+> 设计算法来打乱一个**没有重复元素**的数组。
+
 
 - 两种思路： 暴力算法：每次从数组中随机选择一个数字处理，重复N次构成新数组，并移除原数组的相应元素(即保证无放回随机采样，采样空间为n!)
     - 时间复杂度：O(n^2) 
-- Fisher-Yates 洗牌算法：每次迭代中，生成一个范围在当前下标到数组末尾元素下标之间的随机整数
+- **Fisher-Yates 洗牌算法**：每次迭代中，**生成一个范围在当前下标到数组末尾元素下标之间的随机整数** `rand() % (n - i) + i`
     - 时间复杂度: O(n) 使用rand()%()来生成索引，不需要额外的空间；
     - 理论上同样是n!的采样空间
+- 关键点 ： **`洗牌算法`** 
 
-```class Solution {
-private:
-       vector<int> data;
+```c++
+class Solution {
 public:
+    vector<int> data;
     Solution(vector<int>& nums) {
-        //vector<int>* array=nums;
-        data=nums;
+        data = nums;
     }
-    
     /** Resets the array to its original configuration and return it. */
     vector<int> reset() {
-
+        return data;
+    }
+    
     /** Returns a random shuffling of the array. */
     vector<int> shuffle() {
         vector<int> nums(data);
-        for(int i=0;i<nums.size();i++){
-            cout<<rand()%(nums.size()-i)+i<<endl;
-            swap(nums[i],nums[rand()%(nums.size()-i)+i]);
+        int n = nums.size();
+        for (int i = 0; i < n; i++) {
+            int t = rand() % (n - i) + i ;
+            swap(nums[i], nums[t]);
         }
         return nums;
-    }
-};
-
-/**
- * Your Solution object will be instantiated and called as such:
- * Solution* obj = new Solution(nums);
- * vector<int> param_1 = obj->reset();
- * vector<int> param_2 = obj->shuffle();
- */
-```
-
-### 155. 最小栈
-
-- 问题：复现栈的基本功能，并能取得当前栈的最小值
-- 额外使用一个辅助栈**记录每步的最小值**，空间复杂度为O(n)，时间复杂度同样为O(n)
-
-```
-class MinStack {
-    stack<int> x_stack;
-    stack<int> min_stack;
-public:
-    /** initialize your data structure here. */
-    MinStack() {
-        min_stack.push(INT_MAX);
-    }
-    
-    void push(int x) {
-        x_stack.push(x);
-        min_stack.push(min(min_stack.top(),x));
-    }
-    
-    void pop() {
-        x_stack.pop();
-        min_stack.pop();
-    }
-    
-    int top() {
-        return x_stack.top();
-    }
-    
-    int getMin() {
-        return min_stack.top();
-    }
-};
-
-```
-- 优化：把空间复杂度降低到O(1)
-- 在stack中直接存储元素差值
-
-```
-class MinStack {
-    stack<long> x_stack;
-    long min_value;
-public:
-    /** initialize your data structure here. */
-    MinStack() {
-        min_value=0;
-        
-    }
-    
-    void push(int x) {
-        if(x_stack.empty()){
-            min_value=x;
-            x_stack.push(0);
-        }
-        else{
-            long diff=x-min_value;
-            if(diff<0){
-                x_stack.push(diff);
-                min_value=x;
-            }
-            else{
-                x_stack.push(diff);
-            }
-
-        }
-        
-    }
-    
-    void pop() {
-        long diff=x_stack.top();
-        x_stack.pop();
-        min_value=diff<0?min_value-diff:min_value;
-        //return diff<0?min_value:min_value+diff;
-    }
-    int top() {
-        long diff=x_stack.top();
-        return diff<0?min_value:min_value+diff;
-        //return x_stack.top();
-    }
-    
-    int getMin() {
-        return min_value;
     }
 };
 ```
@@ -449,139 +360,7 @@ public:
 ```
 
 
-### 118. 杨辉三角
 
-
-- 时间复杂度分析：O（n(n+1)/2）
-
-```
-class Solution {
-public:
-    vector<vector<int>> generate(int numRows) {
-        vector<vector<int>> tri(numRows);
-        if(numRows<1)
-          return tri;
-        tri[0].push_back(1);
-        for(int i=1; i<numRows;i++){
-            for(int j=0;j<i+1;j++){
-                if(j==0| j==i)
-                {
-                    tri[i].push_back(tri[i-1][0]);
-                }
-                else{
-                    tri[i].push_back(tri[i-1][j-1]+tri[i-1][j]);
-                }
-            }
-        }
-        return tri;
-    }
-};
-``` 
-
-
-### 2. 有效的括号
-
-- 判断字符串内括号是否有效，强调**同级括号的封闭性**
-- 使用**栈**结构对字符串处理
-- 主要思路是：**利用栈压入左字符，当遇到右字符时进行pop**
-    - **考虑临界情况**：当字符串长度为奇时，返回false；
-    - 在pop时考虑栈内是否有字符压入，即右字符先出现的特殊情况；
-- 复杂度分析： 时间复杂度：O(N)   空间复杂度 O(N+C) *有哈希表的影响*
-
-```
-class Solution {
-public:
-    bool isValid(string s) {
-        stack<char> res;
-        map<char, char> m1;
-	    m1['}'] = '{';
-	    m1[']'] = '[';
-        m1[')'] = '(';
-        for(auto chr:s){
-            if(chr=='('|chr=='['|chr=='{'){
-                res.push(chr);
-            }
-            else{
-                if(res.size()==0){
-                    return false;
-                }
-                char tmp=res.top();
-                if(tmp==m1[chr]){
-                    res.pop();
-                }else{
-                    return false;
-                }
-            }
-        }
-        if(res.size()) return false;
-        return true;
-    }
-};
-```
-
-- 优化思路： 利用ANSCII码替代map处理，左右括号符合ANSCII码差异在1或者2。
-
-
-### 缺失的数字
-- 基础思路：先对数组排序，然后遍历数组，查找空缺位置；时间复杂度：排序算法复杂度(O(nlogN))
-- 为了追求线性复杂度，利用更简单的算法：利用高斯求和进行计算：
-    - 时间复杂度 O(N) 空间复杂度 O(1)
-    - **没有考虑数据溢出的情况**，求和可能会造成数据溢出
-
-```class Solution {
-public:
-    int missingNumber(vector<int>& nums) {
-        if(nums.empty())
-        return 0;
-        int lens = nums.size();
-        int count = (lens+1)*(lens)/2;
-        int res=0;
-        for(auto i:nums)
-            res+=i;
-        return count-res;
-
-    }
-};
-```
-
-- **优化改进**：可以通过边加边减的操作来改写代码，这种写法并不能避免极限情况下的溢出，当循环中的前两个数字为最大的两个时，可能直接就溢出了
-    - 注意写法，避免数组越界
-```
-class Solution {
-public:
-    int missingNumber(vector<int>& nums) {
-        if(nums.empty())
-        return 0;
-        int res =  nums.size();
-        for(int i=0;i<nums.size();i++){
-            res+=i;
-            res-=nums[i];
-        }
-        return res;
-
-    }
-};
-```
-- **最简单的优化，利用long型来存储**
-
-- **位运算**操作，利用XOR异或运算来计算缺失值
-    - 异或运算中 相同值异或为0，数组连续异或得到没有重复的数字。
-    - `3^0^0^1^2^1^3=2` n*2+1个数字异或肯定得到一个不重复的数字，即缺失值
-    - 时间复杂度O(N) 空间复杂度O(1)
-```class Solution {
-public:
-    int missingNumber(vector<int>& nums) {
-        if(nums.empty())
-        return 0;
-        int res =  nums.size();
-        for(int i=0;i<nums.size();i++){
-            res^=i;
-            res^=nums[i];
-        }
-        return res;
-    }
-};
-```
 
 ### 371. 利用位运算实现两整数之和 [Medium]
 > 写一个函数，求两个整数之和，要求在函数体内不得使用 “+”、“-”、“*”、“/” 四则运算符号。
