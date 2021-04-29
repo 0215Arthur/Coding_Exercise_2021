@@ -17,6 +17,8 @@
       - [基于快速排序的思想](#基于快速排序的思想)
       - [基于堆的思想](#基于堆的思想)
   - [386. 整数的字典序 [Medium] [字节 *]](#386-整数的字典序-medium-字节-)
+  - [补充题： 计算数组的小和 *](#补充题-计算数组的小和-)
+  - [剑指51. 数组中的逆序对 *](#剑指51-数组中的逆序对-)
 
 排序算法
 -------
@@ -801,6 +803,139 @@ public:
             
         }
         return ans;
+    }
+};
+```
+
+
+### 补充题： 计算数组的小和 *
+> 在一个数组中，**每一个数左边比当前数小的数累加起来**，叫做这个数组的小和。求一个数组的小和。
+
+```
+例子：[1,3,4,2,5]
+
+1左边比1小的数，没有；
+
+3左边比3小的数，1；
+
+4左边比4小的数，1、3；
+
+2左边比2小的数，1；
+
+5左边比5小的数，1、3、4、2；
+
+所以小和为1+1+3+1+1+3+4+2=16
+*要求时间复杂度O(NlogN)，空间复杂度O(N)*
+```
+https://mp.weixin.qq.com/s/0ih4W6nawzFUPSj3GOnYTQ
+
+- 暴力法： 内外两层循环，时间复杂度O(N^2)
+- 进一步优化：**借鉴归并排序的思想**
+  - smallSum([1,3,4,2,5])实际就等于smallSum([1,3,4])+smallSum([2,5])+c
+  - c即**左半段数组中可能存在比右半段数组小的元素**对应的小和
+  - 对区间进行二分后， 同位置上的小和等于`c = (r - j + 1) * L(i)` **即有多少个元素大于前半区的值**
+![avatar](./补充.png)
+- 套用归并排序的代码框架：
+    - 在合并两个子区间的时候，**可以记录对比的小和结果，同时调整顺序**，得到合并后有序的区间，从而在后续的小和计算中，可以保证右区间有序： 计算公式合理
+- 时间复杂度 O(NlogN)
+```c++
+int merge(vector<int>& nums, int left, int mid, int right) {
+    int l = left; 
+    int r = mid + 1;
+    int res = 0;
+    vector<int> tmp;
+    while (l <= left && r <= right) {
+        if (nums[l] < nums[r]) {
+            res += (right - r + 1) * nums[l];
+            tmp.push_back(nums[l]);
+            l++;
+        }
+        else {
+            tmp.push_back(nums[r]);
+            r++
+        }
+    }
+    while (l <= left) {
+        tmp.push_back(nums[l]);
+        l++;
+    }
+    while (r <= right) {
+        tmp.push_back(nums[r]);
+        r++;
+    }
+    for (int i = 0; i < tmp.size(); i++) {
+        nums[i+l] = tmp[i];
+    }
+    return res;
+}
+
+int mergeSum(vector<int>& nums, int left, int right) {
+    if (left >= right) {
+        return 0;
+    }
+    int mid = left + (right - left) / 2;
+    int L = mergeSum(nums, left , mid);
+    int R = mergeSum(nums, mid + 1, right);
+    int C = merge(nums, left, mid ,right);
+    return L + R + C;
+}
+```
+
+### 剑指51. 数组中的逆序对 *
+
+> 在数组中的两个数字，如果前面一个数字大于后面的数字，则这两个数字组成一个逆序对。输入一个数组，求出这个数组中的逆序对的总数。
+```
+输入: [7,5,6,4]
+输出: 5
+```
+- 与**补充题 计算数组小和**有相似之处
+- 可以采用归并分治的思想进行求解，计算逆序对的过程即比较两个数的大小，
+  - 对于两个数，从左到右对比得到结果
+  - 当采用递归的思想时，有**左右两个区间**， 那么假设左右区间内数字都是降序排列，那么通过双指针进行对比，当`nums[r] < nums[l]`时 即存在 `right - r + 1`个逆序对
+  - 通过以上方面得到左右区间对比下的分布情况，最后将左区间、右区间以及左右区间对比结果相加得到整个区间的逆序对总数
+  - 通过以上的分析，可以看到分治思想的利用，采用自底而上的分治过程得到最终的结果
+- 时间复杂度 O(nlogn)  空间复杂度 O(N) 归并中用到的临时数组
+- 关键点： **`归并思想的应用`**
+ 
+``` c++
+class Solution {
+public:
+    int merge(vector<int>& nums, int left, int mid, int right) {
+        int l = left;
+        int r = mid + 1;
+        vector<int> tmp;
+        int ans = 0;
+        while (l <= mid && r <= right) {
+            if (nums[l] > nums[r]) {
+                ans += (right - r + 1);
+                tmp.push_back(nums[l]);
+                l++;
+            }
+            else {
+                tmp.push_back(nums[r]);
+                r++;
+            }
+        }
+        while (l <= mid) {
+            tmp.push_back(nums[l++]);
+        }
+        while (r <= right) {
+            tmp.push_back(nums[r++]);
+        }
+        for (int i = 0; i < tmp.size(); i++) {
+            nums[i + left] = tmp[i];
+        }
+        return ans;
+    }
+    int mergeNums(vector<int>& nums, int left, int right) {
+        if (left >= right) return 0;
+        int mid = left + (right - left) / 2;
+        int L = mergeNums(nums, left, mid);
+        int R = mergeNums(nums, mid + 1, right);
+        return merge(nums, left, mid, right) + L + R;
+    }
+    int reversePairs(vector<int>& nums) {
+        return mergeNums(nums, 0, nums.size() - 1);
     }
 };
 ```
