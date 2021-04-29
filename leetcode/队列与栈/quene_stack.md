@@ -32,6 +32,7 @@
   - [133. 克隆图 [Medium]](#133-克隆图-medium)
   - [494. 目标和 target sum [Medium]](#494-目标和-target-sum-medium)
   - [二叉树的中序遍历](#二叉树的中序遍历)
+  - [1047. 删除字符串中的所有相邻重复项](#1047-删除字符串中的所有相邻重复项)
 - [进阶训练](#进阶训练)
   - [232. 用栈实现队列 [Easy]](#232-用栈实现队列-easy)
   - [225. 用队列实现栈 [Easy]](#225-用队列实现栈-easy)
@@ -1001,6 +1002,47 @@ public:
     }
 };
 ```
+
+### 1047. 删除字符串中的所有相邻重复项
+> 给出由小写字母组成的字符串 S，重复项删除操作会选择两个相邻且相同的字母，并删除它们。
+在 S 上反复执行重复项删除操作，直到无法继续删除。
+在完成所有重复项删除操作后返回最终的字符串。答案保证唯一。
+
+```
+输入："abbaca"
+输出："ca"
+```
+- 典型的栈结构利用
+- 注意临界情况判断即可
+```c++
+class Solution {
+public:
+    string removeDuplicates(string S) {
+        vector<char> ans;
+        int index = 0;
+        while (index < S.size()) {
+            if (ans.empty()) {
+                ans.push_back(S[index]);
+            }
+            else {
+                bool flag = false;
+                while (!ans.empty() && S[index] == ans.back()) {
+                    ans.pop_back();
+                    flag = true;
+                }
+                if (!flag) ans.push_back(S[index]); 
+            }
+            index++;
+        }
+        string res = "";
+        for (auto s : ans) {
+            res.push_back(s);
+        }
+        return res;
+    }
+};
+```
+
 
 ## 进阶训练
 
