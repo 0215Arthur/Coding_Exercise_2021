@@ -593,3 +593,46 @@ public:
     }
 };
 ```
+
+### 补充题：判断一个点是否在三角形内部 [美团/字节/百度]
+> 在二维坐标系中，所有的值都是double类型，那么一个三角形可以由3个点来代表，给定3个点代表的三角形，再给定一个点(x, y)，判断(x, y)是否在三角形中
+> https://www.nowcoder.com/questionTerminal/f9c4290baed0406cbbe2c23dd687732c
+
+- 思路1： 根据三角形面积和公式进行计算
+- 思路2: 根据向量叉乘方向来判断
+  - 计算AO*AB的叉乘结果，将三条边看作是向量，计算三组向量叉乘，**判断叉乘方向是否都一致**
+  - **如果都为同一方向，说明点在三角形内**
+  - 叉乘公式： AO ❎ AB  = (x1 * y2 - x2 * y1) 
+  - 叉乘结果反映了两个向量的位置关系，叉乘不可交换 
+
+```
+#include<iostream>
+#include<vector>
+using namespace std;
+
+bool cross_product(pair<double, double> a, pair<double, double> b, pair<double, double> t) {
+    
+    double ans = (t.first - a.first) * (b.second - a.second)  - (t.second - a.second) * (b.first - a.first);
+    return ans > 0;
+}
+
+int main() {
+    vector<pair<double, double>> ans(4);
+    for (int i = 0; i < 4; i++) {
+        float x, y;
+        cin >> x >> y;
+        ans[i]={x,y};
+    }
+    
+    if (cross_product(ans[0], ans[1], ans[3]) && cross_product(ans[1], ans[2], ans[3]) 
+        && cross_product(ans[2], ans[0], ans[3]))
+        cout << "Yes" << endl;
+    else if (!cross_product(ans[0], ans[1], ans[3]) && !cross_product(ans[1], ans[2], ans[3]) 
+        && !cross_product(ans[2], ans[0], ans[3]))
+        cout << "Yes" << endl;
+    else 
+        cout << "No" << endl;
+    
+    return 0;
+}
+```

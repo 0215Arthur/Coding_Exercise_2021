@@ -19,6 +19,7 @@
   - [386. 整数的字典序 [Medium] [字节 *]](#386-整数的字典序-medium-字节-)
   - [补充题： 计算数组的小和 *](#补充题-计算数组的小和-)
   - [剑指51. 数组中的逆序对 *](#剑指51-数组中的逆序对-)
+  - [179. 最大数](#179-最大数)
 
 排序算法
 -------
@@ -936,6 +937,48 @@ public:
     }
     int reversePairs(vector<int>& nums) {
         return mergeNums(nums, 0, nums.size() - 1);
+    }
+};
+```
+
+### 179. 最大数
+> 给定一组非负整数 nums，重新排列每个数的顺序（每个数不可拆分）使之组成一个最大的整数。
+需要返回一个字符串而不是整数
+
+```
+输入：nums = [10,2]
+输出："210"
+```
+
+- 分析： 需要对数组进行合理的排序，考虑字典序等影响
+  - 对于两个正整数 a 和 b, 通过对比 `[ab]` `[ba]`两种排列方式得到最终的排序结果，将这种对比方式作为排序的依据，而非单纯根据值大小
+  - 通过以上方式定义了新的排序规则，可以借助运算符重载或手写排序模块的方式来实现最后的排序
+  - 在代码中，为了简便，用来字符串对比的结果作为排序依据
+- 临界情况： 当排序后的数组第一个即为0时，就直接返回0，避免后面出现重复0
+- 关键点： **`自定义排序实现`**
+- 时间复杂度 **O(nlogn*logm)** 复杂度包括字符串对比(logm)和排序两个过程（logn）
+  - m 是 32位整数的最大值，每个数转化为字符串后的长度是 O(\log m) 的数量级
+
+```
+class Solution {
+public:
+    struct cmp {
+        bool operator ()(const int& x, const int& y) {
+            string a = to_string(x);
+            string b = to_string(y);
+            return a + b > b + a;
+        }
+    };
+    string largestNumber(vector<int>& nums) {
+        sort(nums.begin(), nums.end(), cmp());
+        string s = "";
+        // 考虑特殊情况
+        if (nums[0] == 0)
+            return "0";
+        for (auto p : nums) {
+            s += to_string(p);
+        }
+        return s;
     }
 };
 ```
