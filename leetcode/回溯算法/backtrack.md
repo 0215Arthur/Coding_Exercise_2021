@@ -11,6 +11,7 @@
   - [78. 子集 [Medium]](#78-子集-medium)
   - [79. 单词搜索 [Medium]](#79-单词搜索-medium)
   - [93. 复原IP地址 [美团]](#93-复原ip地址-美团)
+  - [698. 划分为k个相等的子集 *](#698-划分为k个相等的子集-)
 
 ## 回溯算法
 
@@ -84,7 +85,7 @@ public:
   - 当`left < n`时才，才能添加左括号
   - 当`rigth < left` 时，才能添加右括号
 
-```
+```c++
 class Solution {
 public:
     int total = 0;
@@ -551,4 +552,66 @@ public:
         return ans;
     }
 };
+```
+### 698. 划分为k个相等的子集 *
+> 给定一个整数数组  nums 和一个正整数 k，找出是否有可能把这个数组分成 k 个非空子集，其总和都相等
+
+```
+输入： nums = [4, 3, 2, 3, 5, 2, 1], k = 4
+输出： True
+说明： 有可能将其分成 4 个子集（5），（1,4），（2,3），（2,3）等于总和。
+```
+
+- 总体上看可以作为回溯题目来做，将数组分配到k个不同桶里
+  - 回溯时，尝试当前值在不同桶的分配
+  - 同时进行剪枝，删除超过目标值的情况
+  - 并提前对数组进行**降序排序**，那么先入桶的即为最大的值，可以减少后面的搜索过程
+    - 此外有一些特殊情况，可能存在超时，需要进行特别的剪枝操作： *具体逻辑还没理解*
+    - 即对于当前入桶值如果之前已经出现过，则直接跳过，相当于避免同一情况重复被不同桶遍历
+
+```c++
+class Solution {
+public:
+    int visited[100] = {0};
+    bool backTrack(vector<int>& nums, int target, int index, vector<int>& sum, int k) {
+        if (index == nums.size()) return true;
+        for (int i = 0; i < k; i++) {
+            int tmp = nums[index] + sum[i];
+            if (tmp > target)
+                continue;
+            // 避免超时操作， 避免重复添加
+            int j = 0;
+            while (j < i && sum[j] != tmp)
+                j++;
+            if (j < i) continue;
+            // 
+            sum[i] = tmp;
+            if (backTrack(nums, target, index + 1, sum, k))
+                return true;
+            sum[i] -=  nums[index];
+        }
+        return false;
+    }
+    bool canPartitionKSubsets(vector<int>& nums, int k) {
+        if (nums.empty()) return false;
+        int sum = 0;
+        int numMax = INT_MIN;
+        int numMin = INT_MAX;
+        for (auto p : nums) {
+            sum += p;
+            numMin = min(numMin, p);
+            numMax = max(p, numMax);
+        }
+        int target = sum / k;
+        if (sum % k || target < numMax) return false;
+        cout << target << endl;
+        if (numMax != target && numMin != target && (numMax + numMin) > target)
+            return false;
+        sort(nums.begin(), nums.end(), greater<int>());
+        vector<int> s (k);
+        return backTrack(nums, target, 0, s, k);
+
+    }
+};
+
 ```
