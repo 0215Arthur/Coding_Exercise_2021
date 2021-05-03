@@ -5,6 +5,7 @@
   - [22. 括号生成 [Medium]](#22-括号生成-medium)
   - [39. 组合数 [Medium] [ByteDance]](#39-组合数-medium-bytedance)
   - [46. 全排列 Permutations [MEDIUM]](#46-全排列-permutations-medium)
+  - [47. 全排列 II](#47-全排列-ii)
   - [51. N皇后 I [HARD]](#51-n皇后-i-hard)
   - [52. N皇后 2 [HARD]](#52-n皇后-2-hard)
   - [x. N皇后思考](#x-n皇后思考)
@@ -168,10 +169,13 @@ public:
 
 
 ### 46. 全排列 Permutations [MEDIUM]
+> 给定不含重复元素的数组，求所有全排列的结果
+
+
 - 模板的标准使用，指定path和状态集合(即选择集合)
 - 需要判断当前选择的path是否有重复
 - 时间复杂度 `O(N!)` 空间复杂度`O(N)` **取决与栈的深度，为N**
-```
+```c++
 #include<algorithm>
 class Solution {
 public:
@@ -193,6 +197,54 @@ public:
             backtrack(path, nums);
             path.pop_back();
         }
+    }
+};
+```
+### 47. 全排列 II 
+> 给定一个**可包含重复数字**的序列 nums ，按任意顺序 返回所有不重复的全排列。
+
+- 与LC46做法一致，主要在于此处存储重复元素
+- 如何**避免出现重复的排列结果**是解题的关键点
+- 对于 `1 1 2`关键点就在于对于重复的1，**只能允许一种遍历顺序**， 否则结果就会重复
+  - 因此，在回溯中添加对重复元素的遍历控制： **通过限制前一个相同元素是否被遍历过**，从而控制了遍历顺序
+```
+if (i > 0 && nums[i] == nums[i - 1] && !visited[i - 1])
+                continue;
+```
+或者
+```
+if (i > 0 && nums[i] == nums[i - 1] && visited[i - 1])
+                continue;
+```
+- 关键点； **`回溯模版`**  **`重复值控制`**
+```
+class Solution {
+public:
+    vector<vector<int>> ans;
+    void backTrack(vector<int> nums, vector<int>& path, int * visited) {
+        if (path.size() == nums.size()) {
+            ans.push_back(path);
+            return;
+        }
+        for (int i = 0; i < nums.size(); i++) {
+            // 重复处理
+            if (i > 0 && nums[i] == nums[i - 1] && !visited[i - 1])
+                continue;
+            if (!visited[i]) {
+                path.push_back(nums[i]);
+                visited[i] = 1;
+                backTrack(nums, path, visited);
+                path.pop_back();
+                visited[i] = 0;
+            }
+        }
+    }
+    vector<vector<int>> permuteUnique(vector<int>& nums) {
+        int visited[10] = {0};
+        vector<int> path;
+        sort(nums.begin(), nums.end());
+        backTrack(nums, path, visited);
+        return ans;
     }
 };
 ```

@@ -1,4 +1,21 @@
-
+- [384. 数组打乱shuffle](#384-数组打乱shuffle)
+- [412. Fizz Buzz](#412-fizz-buzz)
+- [204. 计算质数](#204-计算质数)
+- [326. 3的幂数](#326-3的幂数)
+- [12. 整数转罗马数](#12-整数转罗马数)
+- [13. 罗马数字转整数](#13-罗马数字转整数)
+- [181. 位1的个数](#181-位1的个数)
+- [444. 汉明距离计算](#444-汉明距离计算)
+  - [Happy New Year!!!](#happy-new-year)
+- [180. 颠倒二进制位](#180-颠倒二进制位)
+- [371. 利用位运算实现两整数之和 [Medium]](#371-利用位运算实现两整数之和-medium)
+- [202. 快乐数](#202-快乐数)
+- [172. 阶乘后的0的个数](#172-阶乘后的0的个数)
+- [793. 阶乘函数后K个零](#793-阶乘函数后k个零)
+- [169. 多数元素](#169-多数元素)
+- [621. 任务调度器 [Medium]](#621-任务调度器-medium)
+- [470. 用Rand7实现Rand10 *](#470-用rand7实现rand10-)
+- [补充题：判断一个点是否在三角形内部 [美团/字节/百度]](#补充题判断一个点是否在三角形内部-美团字节百度)
 ### 384. 数组打乱shuffle
 > 设计算法来打乱一个**没有重复元素**的数组。
 
@@ -198,9 +215,29 @@ public:
 };
 ```
 
+### 12. 整数转罗马数
+
+- 模拟转换过程即可
+```c++
+class Solution {
+public:
+    string toRoman(int num, char one, char five, char ten) {
+        if (num <= 3) return string(num, one); //堆叠即可
+        if (num == 4) return string("") + one + five; 
+        if (num <= 8) return string("") + five + string(num - 5, one);
+        if (num == 9) return string("") + one + ten;
+        return "";
+    }
+    string intToRoman(int num) {
+        return toRoman(num/1000, 'M', 0, 0) + toRoman((num%1000)/100, 'C', 'D', 'M') +
+            toRoman((num%100)/10, 'X', 'L', 'C') + toRoman((num%10), 'I', 'V', 'X');
+    }
+};
+```
 ### 13. 罗马数字转整数
 
-```class Solution {
+```c++
+class Solution {
 map<char,int> dict;
 public:
     int romanToInt(string s) {
