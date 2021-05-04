@@ -19,6 +19,7 @@
   - [386. 整数的字典序 [Medium] [字节 *]](#386-整数的字典序-medium-字节-)
   - [补充题： 计算数组的小和 *](#补充题-计算数组的小和-)
   - [剑指51. 数组中的逆序对 *](#剑指51-数组中的逆序对-)
+  - [剑指 45. 把数组排成最小的数](#剑指-45-把数组排成最小的数)
   - [179. 最大数](#179-最大数)
 
 排序算法
@@ -940,6 +941,90 @@ public:
     }
 };
 ```
+
+### 剑指 45. 把数组排成最小的数
+> 输入一个非负整数数组，把数组里所有数字拼接起来排成一个数，打印能拼接出的所有数字中最小的一个。
+
+```
+输入: [3,30,34,5,9]
+输出: "3033459"
+```
+
+- 与LC179题目相似，都是要重新定义一种排序方式
+- 比较`AB < BA` 这种规则具有[对称性、传递性和自反性](https://leetcode-cn.com/problems/ba-shu-zu-pai-cheng-zui-xiao-de-shu-lcof/solution/tu-jie-wo-men-zhi-qian-ke-neng-mei-you-g-gcr3/)
+> 当 mn < nm 时，得到最小数字 mn, 因为在最小数字 mn 中 ，m 排在 n 的前面，我们此时定义 m "小于" n。注意：此时的 "小于" ，并不是数值的 < 。是我们自己定义，因为 m 在最小数字 mn 中位于 n 的前面，所以我们定义 m 小于 n。
+假设 ｍ = 10，n = 1 则有 mn = 101 和 nm = 110; 我们比较 101 和 110 ，发现 101 < 110 所以此时我们的最小数字为 101 ，又因为在最小数字中 10 (m) 排在 1(n) 的前面，我们根据定义则是 10 “小于” 1，反之亦然
+
+  - 自反性：AA = AA，所以 A 等于 A
+  - 对称性：如果 A "小于" B 则 AB < BA，所以 BA > AB 则 B "大于" A
+  - 传递性： AB < BA  BC < CB => AC < CA
+
+```c++
+class Solution {
+public:
+    struct cmp {
+        bool operator () (const int & a, const int & b) {
+            string _a = to_string(a);
+            string _b = to_string(b);
+            return _a + _b < _b + _a;
+        }
+    };
+    string minNumber(vector<int>& nums) {
+        sort(nums.begin(), nums.end(), cmp());
+        string s = "";
+        for (auto p : nums) {
+            s += to_string(p);
+        }
+        return s;
+    }
+};
+```
+
+- 手写快排算法实现，主要调整比较的逻辑
+```
+while (left < right && pivot + strs[right] <= strs[right] + pivot ) 
+right--;
+
+while (left < right && pivot + strs[left] >= strs[left] + pivot ) 
+left++;
+```
+
+- **注意合并式快排写法中的一些细节，初始化划分点和左右边界要进行记录**
+- 如果不急的话， 完全还是可以写之前的函数分段
+```c++
+class Solution {
+public:
+    void quickSort(vector<string>& strs, int left, int right) {
+        if (left >= right) return;
+        int start = left;
+        int r = right;
+        string pivot = strs[left];
+        while (left < right) {
+            while (left < right && pivot + strs[right] <= strs[right] + pivot ) right--;
+            while (left < right && pivot + strs[left] >= strs[left] + pivot ) left++;
+            swap(strs[left], strs[right]);
+        }
+        swap(strs[left], strs[start]);
+        quickSort(strs, start, left - 1);
+        quickSort(strs, left + 1, r);
+    }
+    string minNumber(vector<int>& nums) {
+        // sort(nums.begin(), nums.end(), cmp());
+        string s = "";
+        vector<string> strs;
+        
+        for (auto p : nums) {
+            strs.push_back(to_string(p));
+        }
+        quickSort(strs, 0, strs.size() - 1);
+        for (auto p : strs) {
+            s += p;
+        }
+        return s;
+    }
+};
+```
+
 
 ### 179. 最大数
 > 给定一组非负整数 nums，重新排列每个数的顺序（每个数不可拆分）使之组成一个最大的整数。
