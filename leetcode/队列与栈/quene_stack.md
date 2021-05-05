@@ -20,6 +20,7 @@
   - [155. 最小栈 [Easy]](#155-最小栈-easy)
     - [利用辅助栈](#利用辅助栈)
     - [基于差值存储最小值信息](#基于差值存储最小值信息)
+  - [面试题03.05 栈排序](#面试题0305-栈排序)
   - [739. 每日温度 [Medium]](#739-每日温度-medium)
     - [利用单调栈解题](#利用单调栈解题)
   - [20. 有效的括号 [Easy]](#20-有效的括号-easy)
@@ -522,7 +523,7 @@ public:
       - 因为之前的最小值大于目前栈顶最小值，存的`diff<0`, 直接`_min - diff`即可
   - 取栈顶时也是同样操作： `diff >= 0 ? _min + diff : _min` 
     - 因为对于分界位置： **当前值存在最小值上，而diff值保存的是当前值跟之前的最小值的差值**
-```
+```c++
 class MinStack {
 private:
     stack<long> st;
@@ -566,14 +567,65 @@ public:
     }
 };
 
-/**
- * Your MinStack object will be instantiated and called as such:
- * MinStack* obj = new MinStack();
- * obj->push(x);
- * obj->pop();
- * int param_3 = obj->top();
- * int param_4 = obj->getMin();
- */
+```
+
+### 面试题03.05 栈排序
+> **对栈进行排序使最小元素位于栈顶**。最多只能使用一个其他的临时栈存放数据，但不得将元素复制到别的数据结构（如数组）中。该栈支持如下操作：push、pop、peek 和 isEmpty。当栈为空时，peek 返回 -1
+
+- 设计题， 与最小栈题目相似，需要借助辅助栈实现
+- 本题使用双栈来完成排序
+  - less栈： **升序存储 （栈顶最大）**
+  - greater栈： **降序存储（栈顶最小）**
+  - **入栈时判断目标值小于less栈顶/还是大于greater栈顶，然后动态的移动两个栈**
+  - 最后以greater为主栈进行pop/peek操作
+  - 各类操作中都需要判断栈是否为空
+
+```c++
+class SortedStack {
+public:
+    stack<int> less; // 小于val
+    stack<int> greater; // 大于val
+    SortedStack() {
+
+    }
+    
+    void push(int val) {
+        // 大 -》 小 降序
+        while (!less.empty() && val < less.top()) {
+            greater.push(less.top()); // 将栈顶元素加入 greater
+            less.pop();
+        }
+        // 小 -》 大 逆序
+        while (!greater.empty() && val > greater.top()) {
+            less.push(greater.top());
+            greater.pop();
+        }
+        // 选择一个放入即可
+        greater.push(val);
+    }
+    
+    void pop() {
+        // 将所有元素都加到greater上，构成自顶而下升序的栈
+        while (!less.empty()) {
+            greater.push(less.top());
+            less.pop();
+        }
+        if (!greater.empty())
+            greater.pop();
+    }
+    
+    int peek() {
+        while (!less.empty()) {
+            greater.push(less.top());
+            less.pop();
+        }
+        return greater.empty() ? -1 : greater.top();
+    }
+    
+    bool isEmpty() {
+        return less.empty() && greater.empty();
+    }
+};
 ```
 
 ### 739. 每日温度 [Medium]
