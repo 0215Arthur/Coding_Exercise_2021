@@ -17,10 +17,13 @@
       - [基于快速排序的思想](#基于快速排序的思想)
       - [基于堆的思想](#基于堆的思想)
   - [386. 整数的字典序 [Medium] [字节 *]](#386-整数的字典序-medium-字节-)
+  - [692. 前K个高频单词](#692-前k个高频单词)
   - [补充题： 计算数组的小和 *](#补充题-计算数组的小和-)
   - [剑指51. 数组中的逆序对 *](#剑指51-数组中的逆序对-)
   - [剑指 45. 把数组排成最小的数](#剑指-45-把数组排成最小的数)
   - [179. 最大数](#179-最大数)
+  - [334. 递增的三元子序列 [Medium]](#334-递增的三元子序列-medium)
+  - [628. 三个数的最大乘积](#628-三个数的最大乘积)
 
 排序算法
 -------
@@ -552,7 +555,7 @@ public:
   - 构建最小堆
   - 最后返回堆顶元素即可
   - **时间复杂度： O(NlogN) 空间复杂度 `O(logN)` 递归处理堆的过程**
-```
+```c++
 class Solution {
 public:
     int findKthLargest(vector<int>& nums, int k) {
@@ -808,7 +811,89 @@ public:
     }
 };
 ```
+### 692. 前K个高频单词
+> 给一非空的单词列表，返回前 k 个出现次数最多的单词。
+返回的答案应该按单词出现频率由高到低排序。如果不同的单词有相同出现频率，按字母顺序排序
 
+- 问题分析： 单词频次统计和词典序处理
+- 基本思路与上面的题目基本一致，需要额外考虑对字典序的处理
+- 构建小顶堆可以实现，单词频次自小而大的前K个单词集合的构建， 对于**相同频次的单词则需要反序** 即自大而小的排序
+  - 因此自定义的排序方式为： `a.second > b.second || (a.second == b.second && a.first < b.first);`
+  - 构建了**频次的小顶堆 单词字典的大顶堆**
+  - **最后结果也做反序** （因为要自高而低的排序）
+- 构建频次大顶堆  字典序的小顶堆也可
+```c++
+class Solution {
+public:
+    vector<string> ans;
+    void quickSort(vector<pair<string, int>>& nums, int left, int right, int k) {
+        int start = left;
+        for (int i = left + 1; i <= right; i++) {
+            if ( (nums[i].second > nums[start].second) || 
+                  (nums[i].second == nums[start].second && nums[i].first > nums[start].first) ) {
+                        swap(nums[i], nums[left + 1]);
+                        left++;
+            }
+        }
+        swap(nums[left], nums[start]);
+        if (k <= (left - start )) {
+            quickSort(nums, start, left - 1, k);
+        }
+        else {
+            for (int i = start; i <= left; i++)
+                ans.push_back(nums[i].first);
+            
+            if (k > (left - start + 1)) {
+                quickSort(nums, left + 1, right, k - (left - start + 1));
+            }
+        }
+}
+
+    // 词频 小顶堆   单词 大顶堆
+    struct cmp {
+        bool operator() (const pair<string, int> a, const pair<string, int> b) {
+            return a.second > b.second || (a.second == b.second && a.first < b.first);
+        }
+    };
+    vector<string> topKFrequent(vector<string>& words, int k) {
+        unordered_map<string, int> freqs;
+        for (auto p : words) {
+            freqs[p]++;
+        }
+        vector<pair<string, int>> nums;
+        priority_queue<pair<string, int>,vector<pair<string, int>>, cmp> q;
+        for (unordered_map<string, int>::iterator iter = freqs.begin(); iter != freqs.end(); iter++) {
+            nums.push_back({iter -> first, iter -> second});
+        }
+        for (auto p : nums) {
+            if (q.size() == k) {
+                // 小顶堆
+                if (p.second > q.top().second)
+                {
+                        q.pop();
+                        q.push(p);
+                }
+                else if (q.top().second == p.second && q.top().first > p.first) {
+                    q.pop();
+                    q.push(p);
+                }
+            }
+            else {
+                q.push(p);
+            }
+        }
+        while (!q.empty()) {
+            ans.push_back(q.top().first);
+            q.pop();
+        }
+        // 由于是小顶堆 需要进行反转
+        reverse(ans.begin(), ans.end());
+
+        //quickSort(nums, 0, nums.size() - 1, k);
+        return ans;
+    }
+};
+```
 
 ### 补充题： 计算数组的小和 *
 > 在一个数组中，**每一个数左边比当前数小的数累加起来**，叫做这个数组的小和。求一个数组的小和。
@@ -1064,6 +1149,88 @@ public:
             s += to_string(p);
         }
         return s;
+    }
+};
+```
+
+### 334. 递增的三元子序列 [Medium] 
+- 需要找出当前序列中的三个元素，满足递增性质
+- 在遍历中存储top2值，来完成三元自序列的判断
+- 即存在两级对比，时间复杂度 O(N)
+  - 若是4元子序列呢？三次对比？
+```c++
+class Solution {
+public:
+    bool increasingTriplet(vector<int>& nums) {
+        int min = INT_MAX;
+        int big = INT_MAX;
+        // 两级对比
+        for (int i = 0; i < nums.size(); i++) {
+            if (nums[i] > big) {
+                return true;
+            }
+            else if (nums[i] > min) {
+                big = nums[i]; 
+            }
+            else {
+                min = nums[i];
+            }
+        }
+        return false;
+
+    }
+};
+```
+
+### 628. 三个数的最大乘积
+> 给你一个整型数组 nums ，在数组中找出由三个数组成的最大乘积，并输出这个乘积。
+
+- 问题很简单： **找到最大的三个数即可**
+- 但好像还有点问题，负数的情况呢？ **也得找到最小的二个数**，根据这5个数来确定最大积
+- 简单做法： 排序即可
+  - 时间复杂度 O(NlogN) 空间复杂度 O(1)
+```c++
+class Solution {
+public:
+    int maximumProduct(vector<int>& nums) {
+        sort(nums.begin(), nums.end());
+        if (nums.size() < 3) return 0;
+        int n = nums.size() - 1;
+        return max(nums[n]*nums[n - 1] * nums[n - 2], nums[0]*nums[1]*nums[n]);
+    }
+};
+```
+- 进一步优化： **考虑直接寻找最大的3个数和最小的2个数**， 通过循环中的条件对比来更新结果, 与**[LC334.递增的三元组]**有相似之处
+- 时间复杂度 ： O(N); 空间复杂度 O(1)
+```c++
+class Solution {
+public:
+    int maximumProduct(vector<int>& nums) {
+        int min1 = INT_MAX;
+        int min2 = INT_MAX;
+        int max1 = INT_MIN, max2 = INT_MIN, max3 = INT_MIN;
+        for (auto x : nums) {
+            if (x < min1) {
+                min2 = min1;
+                min1 = x;
+            }
+            else if (x < min2) {
+                min2 = x;
+            }
+            if (x > max1) {
+                max3 = max2;
+                max2 = max1;
+                max1 = x;
+            }
+            else if (x > max2) {
+                max3 = max2;
+                max2 = x;
+            }
+            else if (x > max3) {
+                max3 = x;
+            }
+        }
+        return max(max1 * max2 * max3, max1 * min1 * min2);
     }
 };
 ```
