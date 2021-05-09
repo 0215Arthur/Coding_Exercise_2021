@@ -3,6 +3,9 @@
 
 
 ## ⛽️ 面试编程题目整理
+注： 题目主要来源于Leetcode、 《剑指offer》 与《程序员面试金典》；  
+少部分补充题来自于面经收集， 企业题库： https://codetop.cc/#/home
+
 ### 🥤 [排序算法](./leetcode/排序与搜索/sort.md#排序算法)
   - [基础排序算法梳理](./leetcode/排序与搜索/sort.md#比较排序-vs-非比较排序)
 - [延伸题目](./leetcode/排序与搜索/sort.md#延伸题目)

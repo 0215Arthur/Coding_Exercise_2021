@@ -4,6 +4,7 @@
   - [17. 电话号码的字母组合 [Medium]](#17-电话号码的字母组合-medium)
   - [22. 括号生成 [Medium]](#22-括号生成-medium)
   - [39. 组合数 [Medium] [ByteDance]](#39-组合数-medium-bytedance)
+  - [40. 组合数 II](#40-组合数-ii)
   - [46. 全排列 Permutations [MEDIUM]](#46-全排列-permutations-medium)
   - [47. 全排列 II](#47-全排列-ii)
   - [51. N皇后 I [HARD]](#51-n皇后-i-hard)
@@ -124,12 +125,13 @@ public:
 ```
 
 ### 39. 组合数 [Medium] [ByteDance]
-- 给定一个**无重复元素的数组** candidates 和一个目标数 target ，找出 candidates 中所有可以使数字和为 target 的组合
+> 给定一个**无重复元素的数组** candidates 和一个目标数 target ，找出 candidates 中所有可以使数字和为 target 的组合
 - 所有数字（包括 target）都是**正整数。 解集不能包含重复的组合**。
 - 解题关键：
   - 循环结束的条件： **由于都是正整数，所以当curSum值大于target时必然要结束**
   - 如何避免重复查找： **每次仅寻找大于等于当前组合数的候选值**
   - 时间复杂度 O(N!) 空间复杂度O(N) 
+
 ```c++
 #include<algorithm>
 class Solution {
@@ -166,7 +168,48 @@ public:
 };
 ```
 
+### 40. 组合数 II
+> 给定一个数组 candidates 和一个目标数 target ，找出 candidates 中所有可以使数字和为 target 的组合。candidates 中的每个数字在每个组合中只能使用一次
 
+- 与LC39的唯一区别在于，这个**数组是存在重复元素的**, **每个元素只能使用一次**
+  - 首先进行排序
+  - 在之前写法的基础上，**增加一个重复判断**： 当遍历时出现连续值时进行跳过，避免重复值的二次利用
+  - **结合遍历开始的index**和重复判断逻辑，完成最终的回溯
+
+- 关键点： **遍历起点**  **重复判断**
+
+```c++
+class Solution {
+public:
+    vector<vector<int>> ans;
+    void backTrack(vector<int>& candidates, int target, int begin, int sum,vector<int>& path) {
+        if (sum == target) {
+            vector<int> tmp;
+            for (auto p : path) tmp.push_back(candidates[p]);
+            ans.push_back(tmp);
+            return;  
+        }
+        if (sum > target)
+            return;
+        for (int i = begin; i < candidates.size(); i++) {
+            if (i > begin && candidates[i] == candidates[i - 1]) {
+                continue;
+            }
+            if (path.empty() || path.back() < i) {
+                path.push_back(i);
+                backTrack(candidates, target, i + 1, sum + candidates[i], path);
+                path.pop_back();
+            }
+        }
+    }
+    vector<vector<int>> combinationSum2(vector<int>& candidates, int target) {
+        sort(candidates.begin(), candidates.end());
+        vector<int> path;
+        backTrack(candidates, target,0, 0, path);
+        return ans;
+    }
+};
+```
 
 ### 46. 全排列 Permutations [MEDIUM]
 > 给定不含重复元素的数组，求所有全排列的结果
