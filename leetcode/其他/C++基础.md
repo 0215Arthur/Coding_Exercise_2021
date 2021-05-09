@@ -21,7 +21,7 @@ private:
     - 构造函数：申请空间： `strcpy` 与 `memcpy` 前者用来copy字符串 ` *strcpy(char *dest,char *src);` **遇到'/0'就结束拷贝**
     - memcpy 用于做内存拷贝 `memcpy(b, a, sizeof(b))`
     - 需要先申请空间，然后再进行拷贝
-```
+```c++
 //普通构造函数    
 String::String(const char *str)  
 {  
@@ -38,7 +38,7 @@ String::String(const char *str)
     }  
 }  
 ```  
-```  
+``` c++ 
 // String的析构函数    
 String::~String(void)  
 {  
@@ -49,7 +49,7 @@ String::~String(void)
   - 即利用string对象来构造当前对象
   - `strlen()`来获取当前char的长度
   - 先申请空间，然后再同样进行`strcpy`
-```
+```c++
 //拷贝构造函数    
 String::String(const String &other)// 得分点：输入参数为const型    
 {          
@@ -64,7 +64,7 @@ String::String(const String &other)// 得分点：输入参数为const型
   - 然后需要考虑当前对象是否已有字符串，有的话需要进行空间释放`delete m_data`
   - 最后再进行空间申请和copy
   - **return *this** 需要返回string 对象
-```
+```c++
 //赋值函数    
 String & String::operator = (const String &other) // 得分点：输入参数为const型    
 {  
