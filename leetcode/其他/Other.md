@@ -15,7 +15,8 @@
 - [169. 多数元素](#169-多数元素)
 - [621. 任务调度器 [Medium]](#621-任务调度器-medium)
 - [470. 用Rand7实现Rand10 *](#470-用rand7实现rand10-)
-- [补充题：判断一个点是否在三角形内部 [美团/字节/百度]](#补充题判断一个点是否在三角形内部-美团字节百度)
+- [1518. 换酒问题](#1518-换酒问题)
+- [补充题：判断一个点是否在三角形内部 [美团/字节/百度***]](#补充题判断一个点是否在三角形内部-美团字节百度)
 ### 384. 数组打乱shuffle
 > 设计算法来打乱一个**没有重复元素**的数组。
 
@@ -630,8 +631,28 @@ public:
     }
 };
 ```
+### 1518. 换酒问题
+> 用 numExchange 个空酒瓶可以兑换一瓶新酒。你购入了 numBottles 瓶酒。如果喝掉了酒瓶中的酒，那么酒瓶就会变成空的。 **请你计算 最多 能喝到多少瓶酒。**
 
-### 补充题：判断一个点是否在三角形内部 [美团/字节/百度]
+- 模拟计算即可
+```c++
+class Solution {
+public:
+    int numWaterBottles(int numBottles, int numExchange) {
+        int res = numBottles;
+        while (true) {
+            int a = numBottles / numExchange;
+            int b =  numBottles % numExchange;
+            if (a == 0) break;
+            res += numBottles / numExchange;
+            numBottles = a + b;
+        }
+        return res;
+    }
+};
+```
+
+### 补充题：判断一个点是否在三角形内部 [美团/字节/百度***] 
 > 在二维坐标系中，所有的值都是double类型，那么一个三角形可以由3个点来代表，给定3个点代表的三角形，再给定一个点(x, y)，判断(x, y)是否在三角形中
 > https://www.nowcoder.com/questionTerminal/f9c4290baed0406cbbe2c23dd687732c
 
@@ -642,7 +663,7 @@ public:
   - 叉乘公式： AO ❎ AB  = (x1 * y2 - x2 * y1) 
   - 叉乘结果反映了两个向量的位置关系，叉乘不可交换 
 
-```
+```c++
 #include<iostream>
 #include<vector>
 using namespace std;
