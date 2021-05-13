@@ -6,8 +6,9 @@
     - [基于队列进行广度优先搜索BFS](#基于队列进行广度优先搜索bfs)
       - [常用模板1（queue实现BFS搜索最短路径）:](#常用模板1queue实现bfs搜索最短路径)
       - [常用模板2 (queue+hash set实现BFS/不重复访问)](#常用模板2-queuehash-set实现bfs不重复访问)
-  - [622. 设计循环队列 [Medium]](#622-设计循环队列-medium)
+  - [622. 设计循环队列 [Medium]*](#622-设计循环队列-medium)
   - [200. 岛屿数量 [Medium]](#200-岛屿数量-medium)
+  - [695. 岛屿的最大面积](#695-岛屿的最大面积)
   - [752. 打开转盘锁 [Medium]](#752-打开转盘锁-medium)
   - [279. 完全平方数 [Medium]](#279-完全平方数-medium)
     - [BFS套模板](#bfs套模板)
@@ -150,14 +151,15 @@ int BFS(Node root, Node target) {
 ```
 
 
-### 622. 设计循环队列 [Medium]
+### 622. 设计循环队列 [Medium]*
 - 利用数组进行队列数据管理，出队操作可以从原来的O(N)降至O(1)
 - 参考代码中设计队列容量为 `k+1`
   - 主要是为了留出一个位置，用来判断队列是否满；
   - rear更严格的定义为：下一个元素插入的位置，但目前并未插入
   - 当`(rear+1)==k+1`时，数组实际存储了k个元素，当`(rear+1)%(k+1)==front`时说明数组已满，这种写法避免了最开始front和rear都为0时的特殊情况
 - 解析参考： https://zhuanlan.zhihu.com/p/79163010
-```class MyCircularQueue {
+```c++
+class MyCircularQueue {
 private:
     vector<int> data;
     int capacity;
@@ -219,7 +221,8 @@ public:
 - 时间复杂度： O(MN) 每个元素都要访问一次
 - 空间复杂度： O(min(M,N)) 最大队列长度为min(M,N) 
 
-```class Solution {
+```c++
+class Solution {
 public:
     int numIslands(vector<vector<char>>& grid) {
         if (grid.empty())
@@ -265,7 +268,41 @@ public:
     }
 };
 ```
+### 695. 岛屿的最大面积
+> 给定一个包含了一些 0 和 1 的非空二维数组 grid 。一个 岛屿 是由一些相邻的 1 (代表土地) 构成的组合，这里的「相邻」要求两个 1 必须在水平或者竖直方向上相邻。你可以假设 grid 的四个边缘都被 0（代表水）包围着。**找到给定的二维数组中最大的岛屿面积**
 
+
+- 与[LC200.岛屿数量]的最大区别在于多了一个统计岛屿面积，在bfs/dfs遍历时进行记录即可
+- 遍历逻辑不变，都是每次遍历一个点，将其置为0
+  - dfs 时间复杂度 O(mn) 空间复杂度 O(mn)
+  - bfs 时间复杂度 O(mn) 空间复杂度 O(min(m,n))
+- 关键点： **`dfs/bfs 的基本模板`**
+
+```c++
+class Solution {
+public:
+    int dfs(vector<vector<int>>& grid, int row, int col) {
+        grid[row][col] = 0;
+        int ans = 1;
+        if (row - 1 >= 0 && grid[row - 1][col]) ans += dfs(grid, row - 1, col);
+        if (row + 1 < grid.size() && grid[row + 1][col]) ans += dfs(grid, row + 1, col);
+        if (col - 1 >= 0 && grid[row][col - 1]) ans += dfs(grid, row, col - 1);
+        if (col + 1 < grid[0].size() && grid[row][col + 1]) ans += dfs(grid, row, col + 1);
+        return ans;
+    }
+    int maxAreaOfIsland(vector<vector<int>>& grid) {
+        int ans = 0;
+        for (int i = 0; i < grid.size(); i++) {
+            for (int j = 0; j < grid[0].size(); j++) {
+                if (grid[i][j]) {
+                    ans = max(ans, dfs(grid, i, j));
+                }
+            }
+        }
+        return ans;
+    }
+};
+```
 ### 752. 打开转盘锁 [Medium]
 - 加了访问限制的遍历问题，求最小步数
 - 使用BFS遍历解题，需要利用哈希表存储限制节点和已访问节点
