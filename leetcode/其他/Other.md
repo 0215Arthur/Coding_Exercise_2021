@@ -17,6 +17,7 @@
 - [470. 用Rand7实现Rand10 *](#470-用rand7实现rand10-)
 - [1518. 换酒问题](#1518-换酒问题)
 - [补充题：判断一个点是否在三角形内部 [美团/字节/百度***]](#补充题判断一个点是否在三角形内部-美团字节百度)
+- [面试 16.03. 交点](#面试-1603-交点)
 ### 384. 数组打乱shuffle
 > 设计算法来打乱一个**没有重复元素**的数组。
 
@@ -693,4 +694,64 @@ int main() {
     
     return 0;
 }
+```
+
+### 面试 16.03. 交点
+> 给定两条线段（表示为起点start = {X1, Y1}和终点end = {X2, Y2}），如果它们有交点，请计算其交点，没有交点则返回空值。若有多个交点（线段重叠）则返回 X 值最小的点，X 坐标相同则返回 Y 值最小的点
+
+- **繁琐的几何问题**
+- 思路： 使用参数方程式来表示线段
+  - $x = x_1 + t_1(x2 - x1)$ $y = y_1 + t_1(y2 - y1)$
+- 先判断**对应斜率是否相等**
+  - **相等情况下： 判断两个线段是否会有交点：**
+  - 即将线段二的点带入参数方程，查看是否有解： 
+  -  $x_3 = x_1 + t_1(x2 - x1);$ $y_3 = y_1 + t_1(y2 - y1)$
+  -  $x_3 - x_1 / (x2 - x1) == (y_3 - y_1) / (y_2 - y_1)$ 通过乘法的形式来进行比较，以避免分母为0的情况
+  - 会有交点的情况下，再去更新结果即可
+- 若斜率不等，根据通式计算参数中的系数即可
+
+```c++
+class Solution {
+public:
+    vector<double> ans;
+    void inside(int x1, int y1, int x2, int y2, int xk, int yk) {
+        if ((x1 == x2|| (min(x1, x2) <= xk && xk <= max(x1, x2) )) &&
+            (y1 == y2 || min(y1, y2) <= yk && yk <= max(y1, y2) ) ){
+                if (ans.empty() || ans[0] > xk || (xk == ans[0] && yk < ans[1])) {
+                    ans = {double(xk), double(yk)};
+                }
+        }
+    }
+    vector<double> intersection(vector<int>& start1, vector<int>& end1, vector<int>& start2, vector<int>& end2) {
+        int x1 = start1[0], y1 = start1[1];
+        int x2 = end1[0], y2 = end1[1];
+        int x3 = start2[0], y3 = start2[1];
+        int x4 = end2[0], y4 = end2[1];
+        // 参数方程： x = tx1 + (1-t)(x2 - x1) y = ty1 + (1-t)(y2 -y1)
+        //vector<double> ans;
+        if ((y2 - y1) * (x4 - x3) == (y4 - y3) * (x2 - x1))  {
+            // 线段斜率相等
+            // 判断相等斜率的直线是否会有相交
+             if ((y2 - y1) * (x3 - x1) == (y3 - y1) * (x2 - x1))  {
+                  // x3 y3 在线段1内
+                 inside(x1, y1, x2, y2, x3, y3);
+                inside(x1, y1, x2, y2, x4, y4);
+                inside(x3, y3, x4, y4, x1, y1);
+                inside(x3, y3, x4, y4, x2, y2);
+             }
+        }
+        else {
+            // 线段斜率不想等的情况， 根据比值计算斜率
+             
+            double t1 = (double)(x3 * (y4 - y3) + y1 * (x4 - x3) - y3 * (x4 - x3) - x1 * (y4 - y3)) / ((x2 - x1) * (y4 - y3) - (x4 - x3) * (y2 - y1));
+
+            double t2 = (double)(x1 * (y2 - y1) + y3 * (x2 - x1) - y1 * (x2 - x1) - x3 * (y2 - y1)) / ((x4 - x3) * (y2 - y1) - (x2 - x1) * (y4 - y3));
+            // 判断 t1 和 t2 是否均在 [0, 1] 之间
+            if (t1 >= 0.0 && t1 <= 1.0 && t2 >= 0.0 && t2 <= 1.0) {
+                ans = {x1 + t1 * (x2 - x1), y1 + t1 * (y2 - y1)};
+            }
+        }
+        return ans;
+    }
+};
 ```
