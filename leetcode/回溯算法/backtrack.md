@@ -13,6 +13,7 @@
   - [78. 子集 [Medium]](#78-子集-medium)
   - [79. 单词搜索 [Medium]](#79-单词搜索-medium)
   - [93. 复原IP地址 [美团]](#93-复原ip地址-美团)
+  - [679. 24点游戏 *](#679-24点游戏-)
   - [698. 划分为k个相等的子集 *](#698-划分为k个相等的子集-)
 
 ## 回溯算法
@@ -648,6 +649,97 @@ public:
     }
 };
 ```
+### 679. 24点游戏 *
+> 有 4 张写有 1 到 9 数字的牌。你需要判断是否能通过 *，/，+，-，(，) 的运算得到 24
+
+- 4张牌，使用3次运算组合， **通过回溯法来完成这一搜索**
+- 构建运算的过程为： 
+  - 从4张牌中选择两张来计算， 计算结果加入剩下的两张中，构成3张
+  - 递归地从剩下的牌中选择2张计算，更新到剩下的结果，构成2个值
+  - 最后再选择一个运算，**得到运算结果** 即当数组只有一个元素时进行值判断和返回
+  - 对应的代码为：
+  ```c++
+    vector<double> res;
+    for (int k = 0; k < s; k++) {
+        // 仅保留未使用过的数字
+        if (k != i && k != j)
+            res.push_back(tmp[k]);
+    }
+  ```
+- 在计算中，要考虑到减法和除法不满足交换规律，因此总共可以有6种计算方式， 通过添加限制来跳过对加法和乘法的重复处理:
+```c++
+for (int k = 0; k < 4; k++) {
+    // 对于加法和乘法 只进行一遍计算， 因为满足交换律
+    if (k < 2 && i > j) {
+        continue;
+    }
+    //
+}
+```
+- 关键点： **`四则运算处理`**   **`基于临时数组进行抽卡`**
+ 
+```c++
+class Solution {
+public:
+    bool backTrack(vector<double>& tmp) {
+        if (tmp.size() == 0) return false;
+        if (tmp.size() == 1) {
+            return fabs(tmp[0] - 24) < 1e-6;
+        }
+        int s = tmp.size();
+        for (int i = 0; i < s; i++) {
+            for (int j = 0; j < s; j++) {
+                if (i != j) {
+                    vector<double> res;
+                    for (int k = 0; k < s; k++) {
+                        // 仅保留未使用过的数字
+                        if (k != i && k != j)
+                            res.push_back(tmp[k]);
+                    }
+                    for (int k = 0; k < 4; k++) {
+                        // 对于加法和乘法 只进行一遍计算， 因为满足交换律
+                        if (k < 2 && i > j) {
+                            continue;
+                        }
+                        if (k == 0) {
+                            res.push_back(tmp[i] + tmp[j]);
+                        }
+                        else if (k == 1) {
+                            res.push_back(tmp[i] * tmp[j]);
+                        }
+                        else if (k == 2) {
+                            res.push_back(tmp[i] - tmp[j]);
+                        }
+                        else {
+                            if (fabs(tmp[j]) > 1e-6)
+                                res.push_back(tmp[i] / tmp[j]);
+                            else {
+                                continue;
+                            }
+                        }
+                        if (backTrack(res)) {
+                            return true;
+                        }
+                        res.pop_back();
+                    }
+
+                }
+            }
+        }
+        return false;
+    }
+    bool judgePoint24(vector<int>& cards) {
+        vector<double> res;
+        for (auto p : cards) {
+            res.push_back((double) p);
+        }
+        return backTrack(res);
+    }
+};
+```
+
+
+
 ### 698. 划分为k个相等的子集 *
 > 给定一个整数数组  nums 和一个正整数 k，找出是否有可能把这个数组分成 k 个非空子集，其总和都相等
 
