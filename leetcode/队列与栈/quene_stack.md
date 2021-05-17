@@ -1196,7 +1196,7 @@ public:
 - 通过这种迭代实现， 临时队列中的存储是LIFO的结构，最近push进入的永远在队首
 - 时间复杂度： 入栈O(n) 空间复杂度: O(n)
 
-```
+```c++
 class MyStack {
     queue<int> q1;
     queue<int> q2;
