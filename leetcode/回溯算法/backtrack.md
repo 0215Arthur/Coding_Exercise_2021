@@ -84,9 +84,12 @@ public:
 ```
 
 ### 22. 括号生成 [Medium]
+> 数字 n 代表生成括号的对数，请你设计一个函数，用于能够生成所有可能的并且 有效的 括号组合。
+
+
 - 针对左右括号的依赖，在进行回溯时添加依赖
   - 当`left < n`时才，才能添加左括号
-  - 当`rigth < left` 时，才能添加右括号
+  - 当`right < left` 时，才能添加右括号
 
 ```c++
 class Solution {
@@ -121,6 +124,36 @@ public:
             backTrack(path, step + 1, right + 1, left);
             path.pop_back();
         }
+    }
+};
+```
+
+- 更新代码写法：
+
+```c++
+class Solution {
+public:
+    vector<string> ans;
+    void backTrack(string& path, int left, int right, int n) {
+        if (path.size() == n) {
+            ans.push_back(path);
+            return;
+        }
+        if (left < n/2) {
+            path.push_back('(');
+            backTrack(path, left + 1, right, n);
+            path.pop_back();
+        }
+        if (right < left) {
+            path.push_back(')');
+            backTrack(path, left, right + 1, n);
+            path.pop_back();
+        }
+    }
+    vector<string> generateParenthesis(int n) {
+        string s;
+        backTrack(s, 0, 0, n * 2);
+        return ans;
     }
 };
 ```
