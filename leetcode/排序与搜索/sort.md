@@ -660,7 +660,7 @@ public:
   - 然后递归时同样仅考虑`K`大所在子区间，不用每个分区间都考虑
   - 时间复杂度： O（N）
 
-```
+```c++
 class Solution {
 public:
     void quickSort(vector<pair<int, int>>& nums, int k, int left, int right, vector<int>& res) {

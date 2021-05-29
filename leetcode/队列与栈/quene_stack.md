@@ -940,7 +940,7 @@ public:
 - DFS搜索所有可能组合，是最为暴力的解题方法
   - 时间复杂度： O(2^N),N为数组的长度，即组合的数量； 空间复杂度O(N)
 
-```
+```c++
 class Solution {
 public:
     int count = 0;
