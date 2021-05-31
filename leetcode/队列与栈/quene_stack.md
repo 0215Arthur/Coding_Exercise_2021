@@ -32,6 +32,8 @@
     - [DFS 模版2 - 显式栈实现](#dfs-模版2---显式栈实现)
   - [200. 岛屿数量 [DFS实现]](#200-岛屿数量-dfs实现)
   - [133. 克隆图 [Medium]](#133-克隆图-medium)
+  - [139. 单词拆分](#139-单词拆分)
+  - [329. 矩阵中的最长递增路径](#329-矩阵中的最长递增路径)
   - [494. 目标和 target sum [Medium]](#494-目标和-target-sum-medium)
   - [二叉树的中序遍历](#二叉树的中序遍历)
   - [1047. 删除字符串中的所有相邻重复项](#1047-删除字符串中的所有相邻重复项)
@@ -931,6 +933,119 @@ public:
             }
         }
         return visited[node];
+    }
+};
+```
+### 139. 单词拆分
+> 给定一个非空字符串 s 和一个包含非空单词的列表 wordDict，判定 s 是否可以被空格拆分为一个或多个在字典中出现的单词。
+说明：拆分时可以重复使用字典中的单词。你可以假设字典中没有重复的单词
+
+```
+输入: s = "leetcode", wordDict = ["leet", "code"]
+输出: true
+```
+- 字符串分割问题，暴力的思路就是枚举各种情况，那么再优化一点就是用回溯法来解题
+  - 使用记忆化的思路来进行剪枝，**记录下以当位置开始子串是否能够被拆分**
+  - 剩下的就是回溯法的模板
+- 关键点： **`记忆化 + 回溯`**
+- 时间复杂度 O(2^N) 空间复杂度 O(N)
+
+```c++
+class Solution {
+public:
+    bool backTrack(string s, unordered_set<string>& wordDict, int startIndex, vector<int>& memo) {
+        if (startIndex == s.size()) return true;
+
+        if (memo[startIndex] != -1) return memo[startIndex];
+        for (int i = startIndex; i < s.size(); i++) {
+            string word = s.substr(startIndex, i - startIndex + 1);
+            if (wordDict.count(word) && backTrack(s, wordDict, i + 1, memo)) {
+                memo[i] = 1;
+                return true;
+            }
+        }
+        memo[startIndex] = 0; // 以startIndex开始的子串不可分割
+        return false;
+
+    }
+    bool wordBreak(string s, vector<string>& wordDict) {
+        if (s.empty()) return true;
+        vector<int> memo (s.size(), -1);
+        unordered_set<string> wordSet(wordDict.begin(), wordDict.end());
+        return backTrack(s, wordSet, 0, memo);
+
+    }
+};
+```
+- 本题还有**动态规划**做法： 
+  - 定义dp[i] 表示从[0,i]子串是否可以正确拆分
+  - `dp[i] = (dp[i - j] & dp[j]);` 类似于0/1背包问题
+  - 初始化： `dp<n+1,0>`
+  - 遍历方向： 外层遍历不同位置[1,s.size()]； 内层遍历子段
+- 时间复杂度 O(N^3) 内外循环+子段查找
+```c++
+class Solution {
+public:
+    
+    bool wordBreak(string s, vector<string>& wordDict) {
+        if (s.empty()) return true;
+        vector<int> dp(s.size() + 1, 0);
+        unordered_set<string> wordSet(wordDict.begin(), wordDict.end());
+        dp[0] = 1;
+        // 从1开始编码， (j,i)取出的word刚好为目标子段
+        for (int i = 1; i <= s.size(); i++) {
+            for (int j = 0; j < i; j++) {
+                string word = s.substr(j, i - j);
+                // 判断当前词是否出现 且之前的值也出现过
+                if (wordSet.count(word) && dp[j]) {
+                    dp[i] = 1;
+                }
+            }
+        }
+        return dp[s.size()];
+
+    }
+};
+```
+
+### 329. 矩阵中的最长递增路径
+> 一个 m x n 整数矩阵 matrix ，找出其中**最长递增路径**的长度。
+对于每个单元格，你可以往上，下，左，右四个方向移动。 你不能在 对角线 方向上移动或移动到 边界外（即不允许环绕）。
+
+- 基础思路： dfs/bfs， 从每个位置都搜一遍，但时间复杂度比较高； 为了降低复杂度，引入记忆化：
+  - **记录每个位置上的最长递增路径值**
+  - 当搜索中当前位置有值时，则不再向下搜索，直接取值即可
+  - 因此遍历时返回当前位置记录的最长递增路径值即可
+- 关键点： **`记忆化深度优先搜索`**
+
+```c++
+class Solution {
+public:
+    int dfs(vector<vector<int>>& matrix, int row, int col,  vector<vector<int>>& memo) {
+        if (memo[row][col] != 0) 
+            return memo[row][col];
+        
+        memo[row][col]++;
+        if (row + 1 < matrix.size() && matrix[row + 1][col] > matrix[row][col])
+            memo[row][col] = max(1 + dfs(matrix, row + 1, col, memo), memo[row][col]);
+        if (row - 1 >= 0 && matrix[row - 1][col] > matrix[row][col])
+            memo[row][col] = max(1 + dfs(matrix, row - 1, col, memo), memo[row][col]);
+        if (col + 1 < matrix[0].size() && matrix[row][col + 1] > matrix[row][col])
+            memo[row][col] = max(1 + dfs(matrix, row, col + 1, memo), memo[row][col]);
+        if (col - 1 >= 0 && matrix[row][col - 1] > matrix[row][col])
+            memo[row][col] = max(1 + dfs(matrix, row, col - 1, memo), memo[row][col]);
+        return memo[row][col];
+    }
+    int longestIncreasingPath(vector<vector<int>>& matrix) {
+        int ans = 1;
+        vector<vector<int>> memo(matrix.size(), vector<int>(matrix[0].size()));
+        for (int i = 0; i < matrix.size(); i++) {
+            for (int j = 0; j < matrix[0].size(); j++) {
+                ans = max(ans, dfs(matrix, i, j, memo));
+                //cout << dfs(matrix, i, j, memo) << endl;
+            }
+        }
+        return ans;
     }
 };
 ```
