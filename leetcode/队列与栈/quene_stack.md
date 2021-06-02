@@ -43,6 +43,7 @@
   - [394. 字符串解码 [Medium]](#394-字符串解码-medium)
   - [733. 图像渲染 [Easy]](#733-图像渲染-easy)
   - [542. 01矩阵 [Matrix] **](#542-01矩阵-matrix-)
+  - [547. 省份数量](#547-省份数量)
   - [841. 钥匙和房间](#841-钥匙和房间)
 - [小结](#小结)
 ## 队列
@@ -828,7 +829,7 @@ boolean DFS(int root, int target) {
 ### 200. 岛屿数量 [DFS实现]
 - 时间复杂度分析： O(MN); 空间复杂度：O(MN)（最差情况下，所有点都是1）
 - BFS 时间复杂度: O(MN); 空间复杂度O(min(M,n))
-```
+```c++
 class Solution {
 
 public:
@@ -1592,7 +1593,7 @@ public:
 - 巧妙地对问题进行分析，在计算每个位置上的答案时不是重复搜索，而是从0出发反向搜索，一次全图的bfs就得到了所有位置上到0的距离
   - 时间复杂度：O(rows*cols) 空间复杂度 O(rows * cols)
   - 初始设置：设置visited矩阵记录已访问的信息；将0元素位置首先加入队列中
-```
+```c++
 class Solution {
 
 public:
@@ -1682,6 +1683,43 @@ public:
     }
 };
 ```
+
+### 547. 省份数量
+> 给出城市之间的连通矩阵，省份定义是一组直接或间接相连的城市，组内不含其他没有相连的城市。计算省份数量
+
+
+- 经典的dfs/bfs搜索任务
+  - 通过dfs/bfs搜索最大连通部分，每次搜索都记录已遍历过的城市
+  - 本质上与LC200.岛屿数量基本一致，本题更加简单，只有N个城市，N*N的矩阵
+- 关键点： **`dfs/bfs`** **`visited数组`**
+- 时间复杂度： O(N^2) 空间复杂度O(N)
+```c++
+class Solution {
+public:
+    
+    void dfs(vector<vector<int>>& isConnected, int k, vector<int> & visited) {
+        visited[k] = 1;
+        for (int i = 0; i < isConnected[k].size(); i++) {
+            if (isConnected[k][i] && i != k && visited[i] == 0) {
+                visited[i] = 1;
+                dfs(isConnected, i, visited);
+            }
+        }
+    }
+    int findCircleNum(vector<vector<int>>& isConnected) {
+        int ans = 0;
+        vector<int> visited(isConnected.size());
+        for (int i = 0; i < isConnected.size(); i++) {
+            if (visited[i] == 0) {
+                ans++;
+                dfs(isConnected, i, visited);
+            }
+        }
+        return ans;
+    }
+};
+```
+
 ### 841. 钥匙和房间
 - DFS遍历，记录已访问过的节点，避免重复访问，同时可以记录遍历节点的数量；
 ```
