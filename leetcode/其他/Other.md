@@ -18,6 +18,7 @@
 - [1518. 换酒问题](#1518-换酒问题)
 - [补充题：判断一个点是否在三角形内部 [美团/字节/百度***]](#补充题判断一个点是否在三角形内部-美团字节百度)
 - [面试 16.03. 交点](#面试-1603-交点)
+- [528. 按权重随机选择](#528-按权重随机选择)
 ### 384. 数组打乱shuffle
 > 设计算法来打乱一个**没有重复元素**的数组。
 
@@ -752,6 +753,50 @@ public:
             }
         }
         return ans;
+    }
+};
+```
+
+### 528. 按权重随机选择
+> 给定一个正整数数组 w ，其中 w[i] 代表下标 i 的权重（下标从 0 开始），请写一个函数 pickIndex ，它可以随机地获取下标 i，选取下标 i 的概率与 w[i] 成正比
+
+- 计算前缀和数组， 在**[0,sum-1]**生成随机数，然后在前缀和数组中搜索首个大于随机数的前缀和，即对应的下标
+- 时间复杂度： **O(logN)**   
+- 关键点： **前缀和 + 二分查找**
+```c++
+class Solution {
+public:
+    vector<int> prob;
+    int probSum = 0;
+    Solution(vector<int>& w) {
+        int pred = 0;
+        for (int i = 0; i < w.size(); i++) {
+            prob.push_back(pred + w[i]);
+            pred = prob.back();
+        }
+        probSum = prob.back();
+    }
+    
+    int pickIndex() {
+        int idx = rand() % probSum ; // 设置
+        int left = 0;
+        int right = prob.size() - 1;
+        int ans = 0;
+        while (left < right) {
+            int mid = left + (right - left) / 2;
+            if (prob[mid] <= idx) {
+                left = mid + 1;
+            }
+            else {
+                right = mid;
+            }
+        }
+        // for (int i = 0; i < prob.size(); i++) {
+        //     if (idx <= prob[i]) {
+        //         return i;
+        //     }
+        // }
+        return left;
     }
 };
 ```

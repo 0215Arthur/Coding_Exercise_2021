@@ -17,6 +17,7 @@
       - [基于快速排序的思想](#基于快速排序的思想)
       - [基于堆的思想](#基于堆的思想)
   - [386. 整数的字典序 [Medium] [字节 *]](#386-整数的字典序-medium-字节-)
+  - [440. 字典序中的第k小数字 [字节*]](#440-字典序中的第k小数字-字节)
   - [692. 前K个高频单词](#692-前k个高频单词)
   - [补充题： 计算数组的小和 *](#补充题-计算数组的小和-)
   - [剑指51. 数组中的逆序对 *](#剑指51-数组中的逆序对-)
@@ -766,7 +767,7 @@ public:
   - 通过DFS对树结构进行遍历，保存结果
   - **自顶而下**的遍历方式，每次都进行结果存储
 - 时间复杂度 O(N) 
-```
+```c++
 class Solution {
 public:
     vector<int> ans;
@@ -808,6 +809,77 @@ public:
             
         }
         return ans;
+    }
+};
+```
+### 440. 字典序中的第k小数字 [字节*]
+> 给定整数 n 和 k，找到 1 到 n 中字典序第 k 小的数字。
+
+- 最先想到的笨方法就是： 先生成字典序数组然后取元素即可
+  - 如下实现，但存在大数超时的问题
+```c++
+class Solution {
+public:
+    vector<int> nums;
+    void dfs(int n, int cur) {
+        if (cur > n) return;
+        nums.push_back(cur);
+        for (int i = 0; i <= 9; i++) {
+            dfs(n, cur * 10 + i);
+        }
+    }
+    int findKthNumber(int n, int k) {
+        for (int i = 1;i <= 9; i++) {
+            dfs(n, i);
+        }
+        return nums[k - 1];
+    }
+};
+```
+- 进而进行优化，考虑字典序中元素的特性： **根据数字的前缀进行排序**
+  - 我们需要定位到第k小的元素的前缀即可
+  - 通过计算**指定前缀下的元素数量来实现**
+- 1. 如何给定一个前缀，返回下面子节点总数？
+    - **用下一个前缀的起点减去当前前缀的起点，那么就是当前前缀下的所有子节点数总和。**
+- 2. 如何判断下个前缀：
+  - 当第k个数位于当前前缀的分布内： `count + p > k`: prefix *= 10， 在当前前缀区间内继续寻找
+  - 当`count + p <= k` : prefix++ ： 调大前缀值
+- 亿点点细节：
+  - 寻找的是第k小数，注意参数初始化和循环终止条件： `p = 0 ; p < k`
+  - 分布范围的判断： `count + p > k`
+- 关键点： **`字典序特性`**
+```c++
+class Solution {
+public:
+    // 指定前缀下的长度
+    int getCount(long  prefix, long n) {
+        long  count = 0;
+        long  cur = prefix;
+        long  next = cur + 1; // 看作二叉树的话，相当于计算某个子树的节点数量
+        // 逐层计算
+        while (cur <= n) {
+            count += min(n + 1, next) - cur;
+            cur *= 10;
+            next *= 10; 
+        }
+        return count;
+    }
+    int findKthNumber(int n, int k) {
+        int prefix = 1;
+        int p = 1; // 初始化为1 
+        while (p < k) {
+            int count = getCount(prefix, n);
+            // 确定搜索区间
+            if (p + count > k) {
+                prefix *= 10;
+                p++;
+            }
+            else {
+                prefix++;
+                p += count;
+            }
+        }
+        return prefix;
     }
 };
 ```
