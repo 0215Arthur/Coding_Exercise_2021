@@ -45,7 +45,44 @@ def backtrack (路径，选择列表)：
 - 回溯法解题的思路总体属于中等偏上的难度
 - 跟前面分析一致，需要先确定选择列表和路径列表，以及make choice的规则
 - 时间复杂度： O（N!） 空间复杂度O(N)
+- 代码更新：
+```c++
+class Solution {
+public:
+    unordered_map<char, string> numDigits;
+    vector<string> ans;
+    void backTrack(string digits, int index, string& path) {
+        if (path.size() == digits.size()) {
+            ans.push_back(path);
+            return;
+        }
+        string s = numDigits[digits[index]];
+        for (int i = 0; i < s.size(); i++) {
+            path.push_back(s[i]);
+            backTrack(digits, index + 1, path);
+            path.pop_back();
+        }
+    }
+    vector<string> letterCombinations(string digits) {
+        if (digits.empty()) return ans;
+        int beg = 0;
+        for (int i = 2; i <= 9; i++) {
+            int l = (i == 8 or i < 7) ? 3 :4;
+            string tmp;
+            for (int j = 0; j < l; j++) {
+                tmp.push_back('a' + beg);
+                beg++;
+            }
+            numDigits['0' + i] = tmp;
+        }
+        string path;
+        backTrack(digits, 0, path);
+        return ans;
+    }
+};
 ```
+
+```c++
 class Solution {
 public:
     unordered_map<char, string> numDigits;

@@ -1086,7 +1086,7 @@ public:
       - 还要考虑当`nums[0]=0`的特殊情况，`dp[0][sum]=2`
     - 时间复杂度： O(N^2), 空间复杂度O(N*max(sum)) N为数组长度
 
-```
+```c++
 class Solution {
 public:
     int findTargetSumWays(vector<int>& nums, int S) {
@@ -1125,7 +1125,7 @@ public:
 ```
 - 在上面的基础上，可以对dp数组进行优化，仅利用两个一维数组进行存储。大幅降低空间复杂度
   - 由于上面的转移方程中仅涉及相邻状态的转换，因此可以利用两个数组进行相对更新存储，在动态规划中十分常见
-```
+```c++
 class Solution {
 public:
     int findTargetSumWays(vector<int>& nums, int S) {

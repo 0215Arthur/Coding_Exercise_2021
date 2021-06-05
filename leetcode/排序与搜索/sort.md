@@ -21,6 +21,7 @@
   - [692. 前K个高频单词](#692-前k个高频单词)
   - [补充题： 计算数组的小和 *](#补充题-计算数组的小和-)
   - [剑指51. 数组中的逆序对 *](#剑指51-数组中的逆序对-)
+  - [315. 计算右侧小于当前元素的个数](#315-计算右侧小于当前元素的个数)
   - [剑指 45. 把数组排成最小的数](#剑指-45-把数组排成最小的数)
   - [179. 最大数](#179-最大数)
   - [334. 递增的三元子序列 [Medium]](#334-递增的三元子序列-medium)
@@ -1098,7 +1099,88 @@ public:
     }
 };
 ```
+### 315. 计算右侧小于当前元素的个数
+> 一个整数数组 nums，按要求返回一个新数组 counts。数组 counts 有该性质： counts[i] 的值是  nums[i] 右侧小于 nums[i] 的元素的数量。
+```
+输入：nums = [5,2,6,1]
+输出：[2,1,1,0] 
+解释：
+5 的右侧有 2 个更小的元素 (2 和 1)
+2 的右侧仅有 1 个更小的元素 (1)
+6 的右侧有 1 个更小的元素 (1)
+1 的右侧有 0 个更小的元素
+```
+  
+- 与逆序和/小和题目有相似之处，**可以通过改造归并排序的方式来进行求解**
+  - 主要改造归并排序中的归并操作，以得到目标解
+  - 由于本题要返回每个位置上的值，而非数组和，因此需要设置索引数组记录原始索引
+  - `ans[index[l]] += (r - mid - 1)` 目标值： 即右侧小于当前元素的个数更新方式如上式所示
+- 时间复杂度： O(nlogn)
+  - 在leetcode实现时，由于数组初始化方式导致超时： 需要采用直接指定数组大小的方式来完成初始化，否则在数组比较大时，程序运行效率会比较低
+- 其他方法： 线段树等，暂未做了解
 
+```c++
+class Solution {
+public:
+    vector<int> index;
+    vector<int> ans;
+    void merge(vector<int>& nums, int left, int mid, int right) {
+        int l = left;
+        int r = mid + 1;
+        vector<int> tmp(right - left + 1);
+        vector<int> tmpIndex(right - left + 1); // 记录索引变化
+        int p = 0;
+        while (l <= mid && r <= right) {
+            if (nums[l] <= nums[r]) {
+                tmp[p] = nums[l];
+                tmpIndex[p] = (index[l]); // 记录原始索引位置
+                ans[index[l]]+=(r - mid -1); // 归并更新结果
+                l++;
+                p++;
+            }
+            else {
+                tmp[p] = nums[r];
+                tmpIndex[p] = (index[r]);
+                r++;
+                p++;
+            }
+        }
+        while(l <= mid) {
+            tmp[p] = (nums[l]);
+            tmpIndex[p] = (index[l]); // 记录原始索引位置
+            ans[index[l]]+=(r - mid - 1); // 归并更新结果
+            l++;
+            p++;
+        }
+        while(r <= right) {
+            tmp[p] = (nums[r]);
+            tmpIndex[p] = (index[r]); // 记录原始索引位置
+            r++;
+            p++;
+        }
+        for (int i = 0; i < tmp.size(); i++) {
+            nums[i + left] = tmp[i];
+            index[i + left] = tmpIndex[i];
+        }
+    }
+    void mergeSort(vector<int>& nums, int left, int right) {
+        if (left >= right) return;
+        int mid = left + (right - left )/ 2;
+        mergeSort(nums, left, mid);
+        mergeSort(nums, mid + 1, right);
+        merge(nums, left, mid, right);
+    }
+    vector<int> countSmaller(vector<int>& nums) {
+        // 初始化索引
+        for (int i = 0; i < nums.size(); i++) {
+            index.push_back(i);
+        }
+        ans.resize(nums.size());
+        mergeSort(nums, 0, nums.size() - 1);
+        return ans;
+    }
+};
+```
 ### 剑指 45. 把数组排成最小的数
 > 输入一个非负整数数组，把数组里所有数字拼接起来排成一个数，打印能拼接出的所有数字中最小的一个。
 
