@@ -25,6 +25,7 @@
   - [剑指 45. 把数组排成最小的数](#剑指-45-把数组排成最小的数)
   - [179. 最大数](#179-最大数)
   - [334. 递增的三元子序列 [Medium]](#334-递增的三元子序列-medium)
+  - [378. 有序矩阵中第 K 小的元素](#378-有序矩阵中第-k-小的元素)
   - [628. 三个数的最大乘积](#628-三个数的最大乘积)
 
 排序算法
@@ -396,7 +397,7 @@ priority_queue< int, vector<int>, less<int> > q;     // 大顶堆
 - 时间复杂度 O(nlogn) 主要耗费在排序上
   - **需要掌握基于重载运算符方式的排序实现**
   
-```
+```c++
 class Solution {
 public:
     struct cmp{
@@ -1336,6 +1337,97 @@ public:
 };
 ```
 
+### 378. 有序矩阵中第 K 小的元素
+> n x n 矩阵 matrix ，其中每行和每列元素均按升序排序，找到矩阵中第 k 小的元素
+
+
+- 暴力思路： 矩阵转列表之后排序
+- 考虑数据特性（**行/列升序**），可以采用类似[LC23.合并有序链表]的方式进行归并操作
+  - 使用小顶堆进行数据记录，先将第0列数据放入堆内，之后**进行k-1次入堆+出堆操作**
+  - **第i次出堆即得到第i的元素**， 那么因此最后的堆顶元素即为目标值
+- 时间复杂度: O(klogn) 空间复杂度 O(N)
+```c++
+class Solution {
+public:
+    struct Point {
+            int val;
+            int x;
+            int y;
+            // bool operator() (Point a, Point b){
+            //     return a.val > b.val;
+            // }
+            // point(int val, int x, int y) : val(val), x(x), y(y) {}
+
+            Point(int val, int x, int y):val(val), x(x), y(y) {}
+            bool operator> (const Point& a) const { return this->val > a.val; }
+        };
+
+    int kthSmallest(vector<vector<int>>& matrix, int k) {
+        // 目标： 计算最小元素 使用小顶堆，最小值位于堆顶，通过多次出堆/入堆操作
+        //  实现最后的堆顶为第k小元素
+        int n = matrix.size();
+        priority_queue<Point, vector<Point>, greater<Point>> q;
+        for (int i = 0; i < n; i++) {
+           q.emplace(matrix[i][0], i, 0); 
+        }
+        for (int i = 0; i < k - 1; i++) {
+            Point cur = q.top();
+            q.pop();
+            if (cur.y < n - 1) {
+                q.push(Point(matrix[cur.x][cur.y + 1], cur.x, cur.y + 1));
+            }
+        }
+        return q.top().val;
+    }
+};
+```
+- **二分搜索的思路**
+    - 考虑行/列有序，整体可以看左有序二叉树， 尝试从最小值和最大值间搜索到**num >= k**的值，通过判断有多少个数字大于搜索值
+    - 如果数量不少于 k，那么说明最终答案 x 不大于 mid；
+    - 如果数量少于 k，那么说明最终答案 x 大于 mid。
+- 时间复杂度O(nlog(r-1))  进行log(r-1）次二分操作， 每次复杂度为O(n) 
+- 空间复杂度O(1)
+
+
+```c++
+class Solution {
+public:
+    bool check(vector<vector<int>>& matrix, int mid, int n, int k) {
+        int i = n - 1;
+        int j = 0;
+        int num = 0;
+        // 从左下角开始
+        while (i >= 0 && j < n) {
+            if (matrix[i][j] <= mid) {
+                num += (i + 1); // 更新结果
+                j++; // 下一列
+            }
+            else {
+                i--; // 向上一行
+            }
+        }
+        return num >= k; 
+    }
+
+    int kthSmallest(vector<vector<int>>& matrix, int k) {
+        // 目标： 计算最小元素 使用小顶堆，最小值位于堆顶，通过多次出堆/入堆操作
+        //  实现最后的堆顶为第k小元素
+        int n = matrix.size();
+        int left = matrix[0][0]; // 搜索空间： 左上 到 右下
+        int right = matrix[n-1][n-1];
+        while (left < right) {
+            int mid = (left + right) >> 1;
+            if (check(matrix, mid, n, k)) {
+                right  = mid; // num >= k 向左搜 逼近左阶
+            }
+            else {
+                left = mid + 1; // 向右搜  num <k 搜索>k的值
+            }
+        }
+        return left;
+    }
+};
+```
 ### 628. 三个数的最大乘积
 > 给你一个整型数组 nums ，在数组中找出由三个数组成的最大乘积，并输出这个乘积。
 
