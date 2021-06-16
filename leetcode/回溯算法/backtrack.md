@@ -7,6 +7,7 @@
   - [40. 组合数 II](#40-组合数-ii)
   - [46. 全排列 Permutations [MEDIUM]](#46-全排列-permutations-medium)
   - [47. 全排列 II](#47-全排列-ii)
+  - [剑指offer 38. 字符串的排列](#剑指offer-38-字符串的排列)
   - [51. N皇后 I [HARD]](#51-n皇后-i-hard)
   - [52. N皇后 2 [HARD]](#52-n皇后-2-hard)
   - [x. N皇后思考](#x-n皇后思考)
@@ -331,7 +332,7 @@ if (i > 0 && nums[i] == nums[i - 1] && visited[i - 1])
                 continue;
 ```
 - 关键点； **`回溯模版`**  **`重复值控制`**
-```
+```c++
 class Solution {
 public:
     vector<vector<int>> ans;
@@ -361,6 +362,44 @@ public:
         return ans;
     }
 };
+```
+
+### 剑指offer 38. 字符串的排列
+>  输入一个字符串，打印出该字符串中字符的所有排列。
+
+- 与LC47.全排列类似
+```c++
+class Solution {
+public:
+    vector<string> ans;
+    void backTrack(string s, string& path, vector<int> &visited) {
+        if (path.size() == s.size()) {
+            ans.push_back(path);
+            return;
+        }
+        for (int i = 0; i < s.size(); i++) {
+            if (i != 0 && s[i] == s[i - 1] && !visited[i - 1]) {
+                continue;
+            }
+            if (!visited[i]) {
+                visited[i] = 1;
+                path.push_back(s[i]);
+                backTrack(s, path, visited);
+                path.pop_back();
+                visited[i] = 0;
+            }
+        }
+
+    }
+    vector<string> permutation(string s) {
+        sort(s.begin(), s.end());
+        vector<int> visited(s.size());
+        string path;
+        backTrack(s, path, visited);
+        return ans;
+    }
+};
+
 ```
 
 ### 51. N皇后 I [HARD]
