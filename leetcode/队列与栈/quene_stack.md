@@ -727,7 +727,7 @@ public:
 - 复杂度分析： 时间复杂度：O(N)   空间复杂度 O(N+C) *有哈希表的影响*
 - 关键点： **`栈的基本操作`**
 
-```
+```c++
 class Solution {
 public:
     bool isValid(string s) {
