@@ -11,6 +11,7 @@
   - [51. N皇后 I [HARD]](#51-n皇后-i-hard)
   - [52. N皇后 2 [HARD]](#52-n皇后-2-hard)
   - [x. N皇后思考](#x-n皇后思考)
+  - [37. 解数独](#37-解数独)
   - [78. 子集 [Medium]](#78-子集-medium)
   - [79. 单词搜索 [Medium]](#79-单词搜索-medium)
   - [93. 复原IP地址 [美团]](#93-复原ip地址-美团)
@@ -403,6 +404,9 @@ public:
 ```
 
 ### 51. N皇后 I [HARD]
+> 研究的是如何将 n 个皇后放置在 n×n 的棋盘上，并且使皇后彼此之间不能相互攻击
+> 任何两个皇后都不能处于同一条横行、纵行或斜线上
+
 
 - 选择列表：cols即多少列；每次逐行遍历，每次做选择时验证选择是否符合N皇后冲突规则
   - 验证： 当前位置是否与之前的同列位置/左上线/右上线存在Q **遍历非常耗时，可以通过哈希表为每列/线设置Q标识，以提高速度**
@@ -411,7 +415,7 @@ public:
 - 路径列表：即当前的表盘board
 - 时间复杂度 `O(N!)` 空间复杂度`O(N)` 取决于栈的深度(N行)
 
-```
+```c++
 class Solution {
 public:
     vector<vector<string>> res;
@@ -471,7 +475,10 @@ public:
 };
 ```
 - **优化：** 基于set进行验证优化,设置三个set分别对应各列/线中有Q的索引
-```
+  - 列： 直接存列index
+  - 左斜线： row - col
+  - 右斜线： row + col
+```c++
 class Solution {
 public:
     vector<vector<string>> res;
@@ -526,7 +533,7 @@ public:
 - 只需要求出答案数量
 - 省去存储表盘board的过程，只需要保留哈希表对结果进行验证
 
-```
+```c++
 class Solution {
 public:
     int totalNQueens(int n) {
@@ -562,7 +569,7 @@ public:
 - 当我们在遍历时如果只需要拿到一个合理结果返回即可，那么就可以修改上面的代码，当第一次遍历到底即进行返回
 
 **调整返回逻辑**
-```
+```c++
    bool backTrack(vector<string>& board, int row) {
         if (row == board.size()) {
             res.push_back(board);
@@ -597,6 +604,99 @@ public:
 };
 ```
 
+### 37. 解数独
+> 填充空格来解决数独问题。 9*9 9宫
+
+- 数独问题本质上与n皇后问题一致，是二维空间上的约束问题
+  - 通过回溯+剪枝/状态的方式来完成
+- 状态存储： 使用`bitset` 每位都是0/1， 状态压缩
+  - 针对行/列/宫设置对应的bitset数组
+  - `~(rows[x] | cols[y] | cells[x/3][y/3]);` 通过位运算直接获取当前位置在各个值上的填充可能
+- 回溯控制：
+  - 先搜索填充位置： 按照人类填数独的特点，每次找可选状态最少的位置
+  - 获取填充位置的状态： 获取对应的bitset数组
+  - 进行1～9间的回溯填充即可： 回填二维数组和状态数组
+
+- 关键点： **`回溯的基础技巧`**
+- 精妙点： **`bitset的使用/状态压缩`**
+- `bitset`:
+  - `init`:
+  - `test()`: 检查数组某一位是否为1
+  - `count()`: 快速统计1的数量
+
+```c++
+class Solution {
+public:
+
+    vector<bitset<9> > rows;
+    vector<bitset<9> > cols;
+    vector<vector<bitset<9>> > cells;
+    vector<int> getNext(vector<vector<char>>& board) {
+        // 获取下一个填充位置
+        vector<int> res;
+        int minCnt = 10; // 记录当前位置选择 目标是选出 填充可能性最少的位置
+        for (int i = 0; i < board.size(); i++) {
+            for (int j = 0; j < board[0].size(); j++) {
+                if (board[i][j] == '.') {
+                    bitset<9> test = check(i, j);
+                    if (test.count() >= minCnt) continue;
+                    minCnt = test.count();
+                    res = {i, j};
+                }
+            }
+        }
+        return res;
+
+    }
+    bitset<9> check(int x, int y) {
+        // 检查当前位置是否可填 返回对应的位置信息
+        return ~(rows[x] | cols[y] | cells[x/3][y/3]);
+    }
+    void fillNum(int x, int y, int n, bool flag) {
+        rows[x][n] = flag ? 1 : 0;
+        cols[y][n] = flag ? 1 : 0;
+        cells[x/3][y/3][n] = flag ? 1 : 0;
+    }
+    bool dfs(vector<vector<char>>& board, int cnt) {
+        if (cnt == 0) {
+            return true;
+        }
+        vector<int> next = getNext(board);
+        bitset<9> flags = check(next[0], next[1]);
+        for (int i = 0; i < 9; i++) {
+            if (flags.test(i)) {
+                fillNum(next[0], next[1], i, true);
+                board[next[0]][next[1]] = '1' + i;
+                if (dfs(board, cnt-1)) return true;
+                fillNum(next[0], next[1], i, false);
+                board[next[0]][next[1]] = '.';
+            }
+        }
+        return false;
+    }
+    void solveSudoku(vector<vector<char>>& board) {
+        
+        if (board.empty()) return;
+        rows.resize(9);
+        cols.resize(9);
+        cells = vector<vector<bitset<9>>>(3, vector<bitset<9>>(3));
+        int cnt = 0; // 记录空值数量
+        for (int i = 0; i < board.size(); i++) {
+            for (int j = 0; j < board[0].size(); j++) {
+                if (board[i][j] == '.') {
+                    cnt++;
+                    continue;
+                }
+                int n = board[i][j] - '1'; // 得到具体有效位
+                rows[i] |= (1 << n); // 更新标志位置
+                cols[j] |= (1 << n);
+                cells[i/3][j/3] |= (1 << n);
+            }
+        }
+        dfs(board, cnt);
+    }
+};
+```
 
 ### 78. 子集 [Medium]
 - 计算数组的全部子集，要避免重复子集的出现
