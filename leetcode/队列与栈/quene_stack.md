@@ -22,6 +22,7 @@
     - [利用辅助栈](#利用辅助栈)
     - [基于差值存储最小值信息](#基于差值存储最小值信息)
   - [面试题03.05 栈排序](#面试题0305-栈排序)
+  - [Offer 31. 栈的压入、弹出序列](#offer-31-栈的压入弹出序列)
   - [739. 每日温度 [Medium]](#739-每日温度-medium)
     - [利用单调栈解题](#利用单调栈解题)
   - [20. 有效的括号 [Easy]](#20-有效的括号-easy)
@@ -667,6 +668,36 @@ public:
     }
 };
 ```
+### Offer 31. 栈的压入、弹出序列
+> 第一个序列表示栈的压入顺序，请判断第二个序列是否为该栈的弹出顺序。假设压入栈的所有数字均不相等
+
+- **栈先入后出性质的检验**
+- 思路： 利用辅助栈进行出入栈过程模拟
+  - 将入栈数组压入栈中，然后逐步判断栈顶元素是否等于当前出栈数组的目标元素
+  - 若等于，则进行出栈操作
+  - 最后**判断辅助栈是否为空**
+- 时间复杂度 o(N) 空间复杂度 O(N)
+```c++
+class Solution {
+public:
+    bool validateStackSequences(vector<int>& pushed, vector<int>& popped) {
+        stack<int> st;
+        int index = 0;
+        int n = pushed.size();
+        for (int i = 0; i < n; i++) {
+            st.push(pushed[i]); // 先入栈
+            // 循环出栈操作
+            while (!st.empty() && index < n && st.top() == popped[index]) {
+                st.pop();
+                index++;
+            }   
+        }
+        return st.empty();
+    }
+};
+```
+
+
 
 ### 739. 每日温度 [Medium]
 #### 利用单调栈解题
