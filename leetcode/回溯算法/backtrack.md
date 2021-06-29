@@ -744,7 +744,7 @@ public:
 - 时间复杂度 `O(MN*3^L)` 空间复杂度 `O(min(L,MN))` L : word长度
 
 
-```
+```c++
 class Solution {
 public:
     int direct[4][2] = {{-1, 0}, {1, 0}, {0, 1}, {0, -1}};
