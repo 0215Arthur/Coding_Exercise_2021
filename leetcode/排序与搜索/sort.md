@@ -24,6 +24,8 @@
   - [315. 计算右侧小于当前元素的个数](#315-计算右侧小于当前元素的个数)
   - [剑指 45. 把数组排成最小的数](#剑指-45-把数组排成最小的数)
   - [179. 最大数](#179-最大数)
+  - [295. 数据流的中位数](#295-数据流的中位数)
+  - [703.  数据流中的第 K 大元素](#703--数据流中的第-k-大元素)
   - [334. 递增的三元子序列 [Medium]](#334-递增的三元子序列-medium)
   - [378. 有序矩阵中第 K 小的元素](#378-有序矩阵中第-k-小的元素)
   - [628. 三个数的最大乘积](#628-三个数的最大乘积)
@@ -335,7 +337,7 @@ void mergeSort(vector<int>& arr, int left, int right) {
 - 时间复杂度 `O(nlogn)` 最好情况 `O(nlogn)` 最坏情况 `O(nlogn)`
 - 空间复杂度 `O(1)`
 - 非稳定排序
-```
+```c++
 void adjustHead(vector<int> & arr, int Len, int index) {
     int maxIdx = index;
     int left = 2*index + 1;
@@ -1284,7 +1286,7 @@ public:
 - 时间复杂度 **O(nlogn*logm)** 复杂度包括字符串对比(logm)和排序两个过程（logn）
   - m 是 32位整数的最大值，每个数转化为字符串后的长度是 O(\log m) 的数量级
 
-```
+```c++
 class Solution {
 public:
     struct cmp {
@@ -1306,6 +1308,240 @@ public:
         return s;
     }
 };
+```
+
+### 295. 数据流的中位数
+> 中位数是有序列表中间的数。如果列表长度是偶数，中位数则是中间两个数的平均值。
+> 设计一个支持以下两种操作的数据结构：
+> - void addNum(int num) - 从数据流中添加一个整数到数据结构中。
+> - double findMedian() - 返回目前所有元素的中位数。
+
+
+- 最简单的逻辑:保持数据结构有序性，使用插入排序的思路，每次将添加的数字有序插入到数组中
+  - 使用二分搜索确定插入位置： 
+    - `lower_bound()` (**第一个等于/大于目标值的位置**, 在该位置直接插入)
+    - `upper_bound()` (**第一个大于目标值的元素**，在该位置直接插入)
+    - 通过二分法实现该类边界问题时，需要注意边界的写法，当只有一个元素时是否能够合理处理
+- 时间复杂度 $O(n)+O(logn)≈O(n)$ 空间复杂度 O(n) 
+  - 二分查找： O(logn)
+  - 插入： O(n)
+```c++
+class MedianFinder {
+public:
+    vector<int> nums;
+    /** initialize your data structure here. */
+    MedianFinder() {
+
+    }
+    int binarySearch(vector<int> nums, int num) {
+        int left = 0;
+        int right = nums.size() - 1;
+        int ans = 0;
+        // 特殊情况： 考虑当只有一个元素时的情况 left < right 就会存在问题
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+            if (nums[mid] < num) {
+                left = mid + 1;
+            }
+            else if (nums[mid] > num) {
+                right = mid - 1;
+            }
+            else {
+                return mid;
+            }
+        }
+        //cout << left << endl;
+        return right;
+    }
+    void addNum(int num) {
+        if (nums.empty()) {
+            nums.push_back(num);
+        }
+        else {
+            // int target = binarySearch(nums, num);
+            // cout << "target :" << target << endl;
+            // nums.insert(nums.begin() + target + 1, num); // 插入排序 
+            nums.insert(lower_bound(nums.begin(), nums.end(), num), num) ;
+            // for (auto p : nums) cout << p << " ";
+            // cout << endl;    
+        }
+    }
+    
+    double findMedian() {
+        int n = nums.size();
+        return n % 2 == 1 ? nums[n/2] : (nums[n/2] + nums[n/2 - 1]) / 2.;
+    }
+};
+
+/**
+ * Your MedianFinder object will be instantiated and called as such:
+ * MedianFinder* obj = new MedianFinder();
+ * obj->addNum(num);
+ * double param_2 = obj->findMedian();
+ */
+```
+- **更优的解法**
+    - 如何可以一直直接访问中值元素O(1):
+    - 堆（或优先级队列）
+    - 自平衡二进制搜索树 AVL树
+- 基于两个优先级队列进行实现：
+  - **用于存储输入数字中较小一半的最大堆** small
+  - **用于存储输入数字的较大一半的最小堆** large
+  - **维护条件：**
+    - 保持两个堆元素数量差在1之内
+    - 保持两个堆还能构成有序元素： 即最大堆的top <= 最小堆的top
+    - 通过堆之间的出堆、入堆交互实现
+- 时间复杂度： $O(5 \cdot \log n) + O(1) \approx O(\log n)$ 空间复杂度 O(N)
+  - 最坏情况下，从顶部有三个堆插入和两个堆删除。每一个都需要花费 $O(\log n)$ 时间
+```c++
+class MedianFinder {
+public:
+    priority_queue<int, vector<int>, less<int> > small; // 存储小数的大顶堆
+    priority_queue<int, vector<int>, greater<int> > large; // 存储大数的小顶堆
+    /** initialize your data structure here. */
+    MedianFinder() {
+    }
+ 
+    void addNum(int num) {
+        // 数量差不超过1 且小顶堆的堆顶 大于/等于 大顶堆的堆顶
+        if (small.size() >= large.size()) {
+            // 向小顶堆插入数字 需要利用大顶堆进行约束控制
+            small.push(num);
+            large.push(small.top());
+            small.pop();
+        }
+        else {
+            large.push(num);
+            small.push(large.top());
+            large.pop();
+        }
+    }
+    
+    double findMedian() {
+        if (small.size() > large.size()) {
+            return small.top();
+        }
+        else if (small.size() < large.size()) {
+            return large.top();
+        }
+        return  (large.top() + small.top())/2.0;
+    }
+};
+```
+- 基于平衡树的操作（multiset）
+  - c++中的multiset是基于平衡二叉搜索树实现的，可以通过双指针的方式来直接获取对应的中值元素以得到数据流的中位数
+  - `lo_median `：用于中位数较低的元素
+  - `hi_median `: 用于中位数较高的元素 
+```c++
+class MedianFinder {
+    multiset<int> data;
+    multiset<int>::iterator lo_median, hi_median;
+
+public:
+    MedianFinder()
+        : lo_median(data.end())
+        , hi_median(data.end())
+    {
+    }
+
+    void addNum(int num)
+    {
+        const size_t n = data.size();   // store previous size
+
+        data.insert(num);               // insert into multiset
+
+        if (!n) {
+            // no elements before, one element now
+            lo_median = hi_median = data.begin();
+        }
+        else if (n & 1) {
+            // odd size before (i.e. lo == hi), even size now (i.e. hi = lo + 1)
+
+            if (num < *lo_median)       // num < lo
+                lo_median--;
+            else                        // num >= hi
+                hi_median++;            // insertion at end of equal range
+        }
+        else {
+            // even size before (i.e. hi = lo + 1), odd size now (i.e. lo == hi)
+
+            if (num > *lo_median && num < *hi_median) {
+                lo_median++;                    // num in between lo and hi
+                hi_median--;
+            }
+            else if (num >= *hi_median)         // num inserted after hi
+                lo_median++;
+            else                                // num <= lo < hi
+                lo_median = --hi_median;        // insertion at end of equal range spoils lo
+        }
+    }
+
+    double findMedian()
+    {
+        return (*lo_median + *hi_median) * 0.5;
+    }
+};
+```
+### 703.  数据流中的第 K 大元素
+> 设计一个找到数据流中第 k 大元素的类（class）。**注意是排序后的第 k 大元素**，不是第 k 个不同的元素。请实现 KthLargest 类：
+> - KthLargest(int k, int[] nums) 使用整数 k 和整数流 nums 初始化对象。
+> - int add(int val) 将 val 插入数据流 nums 后，返回当前数据流中第 k 大的元素。
+
+- 与[LC295.数据流的中位数]**有相似之处，都可以通过堆结构进行有效维护**
+  - 初始化构建一个小顶堆，其中堆顶即为当前第topK元素
+  - 在添加元素时进行逻辑判断即可
+    - 考虑堆为空或者堆未满k的特殊清理
+    - 其他情况下，直接进行堆顶元素与当前目标元素进行对比，判断是否需要入堆即可
+- **时间复杂度 O(Nlogn) 空间复杂度:O(K)**
+  - 初始构建堆： O(NlogN)
+  - 单次入堆操作： O(logN)
+```c++
+class KthLargest {
+public:
+    priority_queue<int, vector<int>, greater<int>> small;// 存储大数的小顶堆
+    int total;
+    void adjustHeap(vector<int>& nums, int len, int index) {
+        int minIdx = index;
+        if (index*2 < len && nums[index] > nums[index * 2]) minIdx = index*2;
+        if (index*2 + 1 < len && nums[index] > nums[index * 2 + 1]) minIdx = index*2 + 1;
+        if (index != minIdx) {
+            swap(nums[index], nums[minIdx]);
+            adjustHeap(nums, len, minIdx);
+        }
+    }
+    KthLargest(int k, vector<int>& nums) {
+        total = k;
+        for (auto p : nums) {
+            if (small.size() < k) {
+                small.push(p);
+            }
+            else {
+                if (p > small.top()) {
+                    small.pop();
+                    small.push(p);
+                }
+            }
+        }
+    }
+    
+    int add(int val) {
+        if (small.empty() || small.size() < total) {
+            small.push(val);
+        }
+        else if (val > small.top()) {
+            small.pop();
+            small.push(val);
+        }
+        
+        return small.top();
+    }
+};
+
+/**
+ * Your KthLargest object will be instantiated and called as such:
+ * KthLargest* obj = new KthLargest(k, nums);
+ * int param_1 = obj->add(val);
+ */
 ```
 
 ### 334. 递增的三元子序列 [Medium] 
