@@ -29,6 +29,7 @@
   - [334. 递增的三元子序列 [Medium]](#334-递增的三元子序列-medium)
   - [378. 有序矩阵中第 K 小的元素](#378-有序矩阵中第-k-小的元素)
   - [628. 三个数的最大乘积](#628-三个数的最大乘积)
+  - [补充题. 双栈排序](#补充题-双栈排序)
 
 排序算法
 -------
@@ -1715,4 +1716,36 @@ public:
         return max(max1 * max2 * max3, max1 * min1 * min2);
     }
 };
+```
+
+### 补充题. 双栈排序
+
+> 给定一个乱序的栈，设计算法将其升序排列。
+ps: 允许额外使用一个栈来辅助操作 
+
+```
+输入
+[4, 2, 1, 3]
+输出
+[1, 2, 3, 4]
+```
+- 利用辅助栈对原始栈元素进行调整
+  - **保持辅助栈为单调递增栈**，在维护递增的过程中，出栈时的元素直接放入到原始栈中
+- 空间复杂度 O(N) *时间复杂度O(NlogN)*
+- https://mp.weixin.qq.com/s/g_AqwsSEUwlRSevnStPkEA
+```c++
+stack<int> stackSort(stack<int> &stk) {
+    stack<int> res;
+    if (stk.empty()) return stk;
+    while (! stk.empty()) {
+        int cur = stk.top();
+        stk.pop();
+        while (!res.empty() && res.top() > cur) {
+            stk.push(res.top());
+            res.pop();
+        }
+        res.push(cur);
+    }
+    return res;
+}
 ```
