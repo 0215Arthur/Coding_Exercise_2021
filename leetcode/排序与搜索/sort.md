@@ -26,6 +26,7 @@
   - [179. 最大数](#179-最大数)
   - [295. 数据流的中位数](#295-数据流的中位数)
   - [703.  数据流中的第 K 大元素](#703--数据流中的第-k-大元素)
+  - [480. 滑动窗口中位数](#480-滑动窗口中位数)
   - [334. 递增的三元子序列 [Medium]](#334-递增的三元子序列-medium)
   - [378. 有序矩阵中第 K 小的元素](#378-有序矩阵中第-k-小的元素)
   - [628. 三个数的最大乘积](#628-三个数的最大乘积)
@@ -1544,6 +1545,97 @@ public:
  * int param_1 = obj->add(val);
  */
 ```
+
+
+
+
+
+
+
+
+### 480. 滑动窗口中位数
+> 计算每个滑动窗口的中位数
+- 是[LC295.数据流的中位数]的进阶版本，在原来的计算数据流的中位数基础上，需要考虑窗口滑动的影响：即**同时增加和删除元素**的影响
+  - 使用最基本的操作方法： 双堆方法，小值的大顶堆和大值的小顶堆
+  - 仍然保持两者的约束： `small.top() <= large.top()`
+  - 由于删除和增加的同时存在，而堆结构不支持删除元素
+- 可以设计**延迟删除**的操作逻辑，这也是本题的难点
+  - 对于出窗的元素利用哈希表进行记录，每个窗口进行状态判断：
+  - 判断**出窗及入窗元素在small/large堆**？
+  - 确定当前窗口的small/large堆差值
+  - 当左右不平衡时进行相应的左右元素移动， 以保持两侧平衡
+
+- 时间复杂度 O(NlogN) 空间复杂度 O(N)
+- 关键点： **`左右堆平衡方法`** **`双堆法`**
+
+```c++
+class Solution {
+public:
+    unordered_map<int, int> mp; // 记录待删元素
+    priority_queue<int, vector<int>, less<int>> small;// 大顶堆
+    priority_queue<int, vector<int>, greater<int>> large; // 小顶堆
+    double getMid(int k) {
+        if (k % 2) return small.top();
+        // 防止大数加和溢出
+        return ((long long) small.top() + (long long) large.top()) / 2.0;
+    }
+    vector<double> medianSlidingWindow(vector<int>& nums, int k) {
+        // 初始化: 构成初始堆栈
+        for (int i = 0; i < k; i++) {
+            small.push(nums[i]);
+        }
+        for (int i = 0; i < k / 2; i++) {
+            large.push(small.top());
+            small.pop();
+        }
+        vector<double> res;
+        res.push_back(getMid(k));
+        for (int i = k; i < nums.size(); i++) {
+            int balance = 0; // small堆元素数目与large堆元素个数差值的增量
+            int left = nums[i - k];
+            mp[left]++;
+            // 要删除的值在small堆
+            if (!small.empty() && left <= small.top()) {
+                balance--; // -1 剔除待删值的影响
+            }
+            else { // 在右堆
+                balance++; // x - (y - 1) 相当于+1
+            }
+            if (!small.empty() && nums[i] <= small.top()) {
+                // 新添加的值在左small
+                small.push(nums[i]); //
+                balance++;
+            }
+            else {
+                large.push(nums[i]);
+                balance--;
+            }
+            // small - large
+            if (balance > 0) {
+                large.push(small.top());
+                small.pop();
+            }
+            else if (balance < 0) {
+                small.push(large.top());
+                large.pop();
+            }
+            // 延迟删除处理 删除堆顶的待删元素
+            while (!small.empty() && mp[small.top()] > 0) {
+                mp[small.top()]--;
+                small.pop();
+            }
+            while (!large.empty() && mp[large.top()] > 0) {
+                mp[large.top()]--;
+                large.pop();
+            }
+            res.push_back(getMid(k));
+        }
+        return res;
+    }
+};
+```
+- 其他方法： 二分查找 + 插入排序    
+
 
 ### 334. 递增的三元子序列 [Medium] 
 - 需要找出当前序列中的三个元素，满足递增性质
