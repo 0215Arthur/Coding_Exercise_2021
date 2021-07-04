@@ -633,41 +633,34 @@ public:
 ```
 
 ### 202. 快乐数
-- *不是很快乐。。。。。*
+> 「快乐数」定义为：
+对于一个正整数，每一次将该数替换为它每个位置上的数字的平方和。然后重复这个过程直到这个数变为 1，也可能是 无限循环 但始终变不到 1。如果 可以变为  1，那么这个数就是快乐数。
+
 - 解题关键： 如何解决无限循环
   - 在数的不断拆分中，可能出现循环的环结构，使用哈希表进行数的重复检测即可
 - 时间复杂度 O(logN) 空间复杂度 O(logN)
 
-```
+```c++
 class Solution {
 public:
-    int count(vector<int> arr) {
-        int sum = 0;
-        for (auto s : arr) {
-            sum += s*s;
-        }
-        return sum;
-    }
-    
     bool isHappy(int n) {
-        set<int> numbers;
-        vector<int> w;
-        numbers.insert(n);
+        unordered_set<int> mps;
         while (true) {
-            while(n) {
-                int t = n%10;
-                w.push_back(t);
-                n = n/10;
+            int sum = 0;
+            while (n) {
+                int s = n % 10;
+                n /= 10;
+                sum += s*s;
             }
-            n = count(w);
-            if (n == 1)
+            if (sum == 1) 
                 return true;
-            w.clear();
-            if (numbers.count(n)) {
+            if (mps.count(sum)) {
                 return false;
             }
-            numbers.insert(n);
+            mps.insert(sum);
+            n = sum;
         }
+        return false;
     }
 };
 ```
