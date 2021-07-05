@@ -107,7 +107,7 @@ void bubbleSort(vector<int>& arr) {
       - 优化3：优化递归操作
       - 优化4：**使用并行或多线程处理子序列**
 
-```
+```c++
 int Parition( vector<int>& arr, int left, int right) {
     int pivot = arr[left];
     int start = left;
@@ -140,7 +140,7 @@ void quickSort(vector<int>& arr, int left, int right) {
 
 - **主元优化实例： 采用随机选取主元**
 
-```
+```c++
 class Solution {
 public:
     int partition(vector<int>& nums, int left, int right) {
@@ -283,7 +283,7 @@ void shellSort(vector<int>& arr) {
   - 适用场景：**数据量大，对稳定性有一定要求**
 
 
-```
+```c++
 void merge(vector<int>& arr, int left, int mid, int right) {
     vector<int> tmp;
     int i = left;
