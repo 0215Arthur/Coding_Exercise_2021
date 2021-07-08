@@ -67,7 +67,7 @@ https://zhuanlan.zhihu.com/p/60152722
 - 特点：遍历进行对比交换，时间复杂度 O(N2), 稳定排序
 - 基本盘
 
-```
+```c++
 void bubbleSort(vector<int>& arr) {
     int L = arr.size();
     for (int i = 0; i < L; i++) {
@@ -188,7 +188,7 @@ public:
 
 - **代码精简版**
 
-```
+```c++
     void quick_sort(vector<int>& nums, int l, int r){
         if(l < r){
             int i = l, j = r;
@@ -235,7 +235,7 @@ void selectSort(vector<int>& arr) {
 - 空间复杂度:  O(1)
 - 稳定性： **稳定 (不存在位置交换)**
 
-```
+```c++
 void insertSort(vector<int>& arr) {
     int Len = arr.size();
     for (int i = 0; i < Len - 1; i++) {
@@ -256,7 +256,7 @@ void insertSort(vector<int>& arr) {
   - 时间复杂度： O(NlogN)  最好的情况： O(N) 最差的情况： O(NlogN)
   - 空间复杂度:  O(1)
   - 不稳定
-```
+```c++
 void shellSort(vector<int>& arr) {
     int Len = arr.size();
     int gap = Len/2;
@@ -277,7 +277,7 @@ void shellSort(vector<int>& arr) {
  
 #### 5. 归并排序
 - **基于分治思路**
-- 建立在归并操作上的一种有效的排序算法。该算法是采用分治法（Divide and Conquer）的一个非常典型的应用。归并排序是一种稳定的排序方法。将已有序的子序列合并，得到完全有序的序列；即先使每个子序列有序，再使子序列段间有序。若将两个有序表合并成一个有序表，称为2-路归并
+- 建立在归并操作上的一种有效的排序算法。该算法是采用**分治法（Divide and Conquer）**的一个非常典型的应用。归并排序是一种稳定的排序方法。将已有序的子序列合并，得到完全有序的序列；即先使每个子序列有序，再使子序列段间有序。若将两个有序表合并成一个有序表，称为2-路归并
   - 时间复杂度： 稳定在`O(NLogN)` 空间复杂度 `O(N)`
   - 稳定排序
   - 适用场景：**数据量大，对稳定性有一定要求**
@@ -445,32 +445,32 @@ public:
   - 快速选择： 维护左侧部分小于/等于划分点
 
 - 堆排序
-```
-    vector<int> getLeastNumbers(vector<int>& arr, int k) {
-        priority_queue<int, vector<int>, less<int>> p;
+```c++
+vector<int> getLeastNumbers(vector<int>& arr, int k) {
+    priority_queue<int, vector<int>, less<int>> p;
 
-        for (int i = 0; i < arr.size(); i++) {
-            if (i < k) {
+    for (int i = 0; i < arr.size(); i++) {
+        if (i < k) {
+            p.push(arr[i]);
+        }
+        else {
+            if (!p.empty() && arr[i] < p.top()) {
+                p.pop();
                 p.push(arr[i]);
             }
-            else {
-                if (!p.empty() && arr[i] < p.top()) {
-                    p.pop();
-                    p.push(arr[i]);
-                }
-            }
-        } 
-        vector<int> ans;
-        while (!p.empty()) {
-            ans.push_back(p.top());
-            p.pop();
         }
-        return ans;
+    } 
+    vector<int> ans;
+    while (!p.empty()) {
+        ans.push_back(p.top());
+        p.pop();
     }
+    return ans;
+}
 ```
 - 手写大顶堆 时间复杂度O(NlogK) 空间复杂度O(k)
 
-```
+```c++
 class Solution {
 public:
     void adjustHeap(vector<int>& arr, int len, int index) {
@@ -505,12 +505,11 @@ public:
 - **快速排序的改进： 快速选择**
   - 时间复杂度O(N)
   - 只关注于找到比当前划分点小于/等于的元素。
-  - 并在目标范围内进行递归，不会同时左右都递归，大幅降低时间复杂度
-    - 每次都判断第k个元素的区间位置(从小到大的第k个)
-```
+  - **并在目标范围内进行递归，不会同时左右都递归**，大幅降低时间复杂度
+    - **每次都判断第k个元素的区间位置(从小到大的第k个)**
+```c++
 class Solution {
 public:
-    
     void quickSelect(vector<int>& arr, int left, int right, int k,vector<int>& ans ) {
         int start = left;
         int pivot = arr[left];
@@ -588,7 +587,7 @@ public:
   - 与上一题思路基本一致，只要在指定区域进行搜索即可
   - 时间复杂度: O(N) 空间复杂度:`O(logN)` 递归栈的深度
 
-```
+```c++
 class Solution {
 public:
     void quickSort(vector<int>& nums, int left, int right, int k, vector<int>& res) {
