@@ -24,6 +24,7 @@
 - [面试 16.03. 交点](#面试-1603-交点)
 - [400. 第N个数](#400-第n个数)
 - [528. 按权重随机选择](#528-按权重随机选择)
+- [1411. 给N*3网格涂色的方案数](#1411-给n3网格涂色的方案数)
 
 
 ### 263. 丑数
@@ -1047,6 +1048,31 @@ public:
         //     }
         // }
         return left;
+    }
+};
+```
+
+### 1411. 给N*3网格涂色的方案数
+>  n x 3 的网格图 grid ，你需要用**红，黄，绿**三种颜色之一给每一个格子上色，且确保相邻格子颜色不同（也就是有相同水平边或者垂直边的格子颜色不同）。
+- 寻找涂色方案数， 可以通过寻找递归公式的方式得到：
+- 按行进行情况分析： 第`n-1`行为`ABC`/`ABA`：
+  - 为`ABC`: 第n行的排列中有2种为 ABA模式 ， 2种为ABC模式
+  - 为`ABA`: 第n行种有3种为ABA模式， 2种为ABC模式
+- 根据上面的分析，可以得到两种模式的递归公式
+```c++
+class Solution {
+public:
+    int numOfWays(int n) {
+        long long abc = 6;
+        long long aba = 6;
+        constexpr long long mod = 1000000007;
+        for (int i = 2; i <= n; i++) {
+            long long _abc = (abc * 2 + aba * 2) % mod;
+            long long _aba = (aba * 3 + abc * 2) % mod;
+            abc = _abc;
+            aba = _aba;
+        }
+        return (abc + aba) % mod;
     }
 };
 ```
