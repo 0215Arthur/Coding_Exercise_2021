@@ -42,6 +42,7 @@
   - [232. 用栈实现队列 [Easy]](#232-用栈实现队列-easy)
   - [225. 用队列实现栈 [Easy]](#225-用队列实现栈-easy)
   - [394. 字符串解码 [Medium]](#394-字符串解码-medium)
+  - [726. 原子的数量](#726-原子的数量)
   - [733. 图像渲染 [Easy]](#733-图像渲染-easy)
   - [542. 01矩阵 [Matrix] **](#542-01矩阵-matrix-)
   - [547. 省份数量](#547-省份数量)
@@ -1549,6 +1550,88 @@ public:
     }
 };
 ```
+###  726. 原子的数量
+
+```
+输入：formula = "Mg(OH)2"
+输出："H2MgO2"
+解释： 
+原子的数量是 {'H': 2, 'Mg': 1, 'O': 2}。
+```
+
+- 与[LC394字符串解码]相似，通过栈进行嵌套结构的处理，每层使用哈希表进行存储
+  - 遇到`(`时插入空哈希表
+  - 遇到`)`进行出栈操作，取当前栈顶哈希表，把对应元素数量加到结果上即可
+  - 其他情况进行字母和数字的扫描判断即可
+    - 需要注意数字的情况:对于`(H)`的情况，要注意返回1
+- 关键点：**`哈希表+栈结构`**
+```c++
+class Solution {
+public:
+    string getAtom(string& s, int& idx) {
+        string res;
+        res.push_back(s[idx]);
+        idx++;
+        while (idx < s.size() && s[idx] <= 'z' && s[idx] >= 'a') {
+            res.push_back(s[idx]);
+            idx++;
+        }
+        return res;
+    }
+    int getNum(string& s, int& idx) {
+        string res;
+        while ( idx < s.size() && isdigit(s[idx])) {
+            res.push_back(s[idx]);
+            idx++;
+        }
+        if (res.empty()) {
+            return 1;
+        }
+        return stoi(res);
+    }
+    string countOfAtoms(string formula) {
+        stack<unordered_map<string, int>> st;
+        int idx = 0;
+        string tmp = "";
+        st.push({}); // 使用{}来插入空哈希表
+        while (idx < formula.size()) {
+            if (isalpha(formula[idx])) {
+                 tmp = getAtom(formula, idx);
+                 if (isdigit(formula[idx])) {
+                     int num = getNum(formula, idx);
+                     st.top()[tmp] += num;
+                 }
+                 else {
+                     st.top()[tmp] += 1; 
+                 }
+            }
+            else if (formula[idx] == '(') {
+                st.push({});
+                idx++;
+            }
+            else if (formula[idx] == ')') {
+                idx++;
+                int num = getNum(formula, idx);
+                unordered_map<string, int> t = st.top();
+                st.pop();
+                for (auto& iter : t) {
+                    st.top()[iter.first] += iter.second * num;
+                }
+            }
+        }
+        vector<pair<string, int>> res(st.top().begin(), st.top().end());
+        sort(res.begin(), res.end());
+        string ans = "";
+        for (auto& p : res) {
+            ans += p.first;
+            if (p.second > 1)
+                ans += to_string(p.second);
+        }
+        return ans;
+    }
+};
+```
+
 
 ### 733. 图像渲染 [Easy]
 - DFS 需要重点考虑初始节点与目标颜色相同的情况
