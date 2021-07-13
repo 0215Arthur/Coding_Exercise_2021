@@ -722,7 +722,7 @@ for (visit list) {
 - 直接套用单调栈模板得到结果
 - 在实际答题中，需要能够发现单调栈的使用情况：
   - **要寻找任一个元素的右边或者左边第一个比自己大或者小的元素的位置**
-```
+```c++
 class Solution {
 public:
     vector<int> dailyTemperatures(vector<int>& T) {
