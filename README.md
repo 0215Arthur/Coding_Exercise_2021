@@ -14,6 +14,9 @@
 - [T4-随机问题](topics/T4-随机问题.md) :star::star: 
 - [T5-下一个更大数问题](topics/T5-下一个更大数问题.md) :star::star::star::star:  
 - [T6-树结构中的指针问题](./topics/T6-树结构中的指针问题.md) :star::star::star::star::star: 
+- [T7-二叉搜索树](topics/T7-二叉搜索树.md):star::star::star::star::star: 
+- [T8-单调栈技巧](topics/T8-单调栈技巧.md):star::star::star::star::star: 
+- [T9-子序列问题](topics/T9-子序列问题.md):star::star::star::star::star: 
 
 ### 🥤 [排序算法](./leetcode/排序与搜索/sort.md#排序算法)
   - [基础排序算法梳理](./leetcode/排序与搜索/sort.md#比较排序-vs-非比较排序)
