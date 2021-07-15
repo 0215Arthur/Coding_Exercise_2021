@@ -168,6 +168,8 @@ public:
     // ***** 关键
     int randomized_partition(vector<int>& nums, int left, int right) {
         int i = rand() % (right - left + 1) + left; // 随机选一个作为我们的主元
+        // rand() 随机返回0~最大随机数间的任意整数
+        // rand() % 100 : 返回 0~99的值
         swap(nums[left], nums[i]); // 交换随机元
         return partition(nums, left, right);
     }
