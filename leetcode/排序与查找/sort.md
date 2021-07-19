@@ -879,7 +879,7 @@ public:
             // 确定搜索区间
             if (p + count > k) {
                 prefix *= 10;
-                p++;
+                p++; // 关键细节
             }
             else {
                 prefix++;
@@ -1057,7 +1057,7 @@ int mergeSum(vector<int>& nums, int left, int right) {
 - 与**补充题 计算数组小和**有相似之处
 - 可以采用归并分治的思想进行求解，计算逆序对的过程即比较两个数的大小，
   - 对于两个数，从左到右对比得到结果
-  - 当采用递归的思想时，有**左右两个区间**， 那么假设左右区间内数字都是降序排列，那么通过双指针进行对比，当`nums[r] < nums[l]`时 即存在 `right - r + 1`个逆序对
+  - 当采用递归的思想时，有**左右两个区间**， 那么**假设左右区间内数字都是降序排列**，那么通过双指针进行对比，当`nums[r] < nums[l]`时 即存在 `right - r + 1`个逆序对
   - 通过以上方面得到左右区间对比下的分布情况，最后将左区间、右区间以及左右区间对比结果相加得到整个区间的逆序对总数
   - 通过以上的分析，可以看到分治思想的利用，采用自底而上的分治过程得到最终的结果
 - 时间复杂度 O(nlogn)  空间复杂度 O(N) 归并中用到的临时数组
@@ -1121,6 +1121,7 @@ public:
   - 主要改造归并排序中的归并操作，以得到目标解
   - 由于本题要返回每个位置上的值，而非数组和，因此需要设置索引数组记录原始索引
   - `ans[index[l]] += (r - mid - 1)` 目标值： 即右侧小于当前元素的个数更新方式如上式所示
+  - 注意： **`index`存储的是每个位置上的索引变化，而非元素值与位置的对应关系**！
 - 时间复杂度： O(nlogn)
   - 在leetcode实现时，由于数组初始化方式导致超时： 需要采用直接指定数组大小的方式来完成初始化，否则在数组比较大时，程序运行效率会比较低
 - 其他方法： 线段树等，暂未做了解
@@ -1128,60 +1129,60 @@ public:
 ```c++
 class Solution {
 public:
-    vector<int> index;
     vector<int> ans;
-    void merge(vector<int>& nums, int left, int mid, int right) {
-        int l = left;
-        int r = mid + 1;
+    vector<int> index;
+    void merge(vector<int>& nums,int left, int mid, int right) {
+        int i = left;
+        int j = mid + 1;
         vector<int> tmp(right - left + 1);
-        vector<int> tmpIndex(right - left + 1); // 记录索引变化
+         vector<int> tmpIndex(right - left + 1);
         int p = 0;
-        while (l <= mid && r <= right) {
-            if (nums[l] <= nums[r]) {
-                tmp[p] = nums[l];
-                tmpIndex[p] = (index[l]); // 记录原始索引位置
-                ans[index[l]]+=(r - mid -1); // 归并更新结果
-                l++;
-                p++;
+        while (i <= mid && j <= right) {
+            if (nums[i] > nums[j]) {
+                // update cur pos result
+                ans[index[i]] += (right - j + 1);
+                tmp[p] = nums[i]; 
+                // update the pos index
+                tmpIndex[p] = index[i];
+                i++;
             }
             else {
-                tmp[p] = nums[r];
-                tmpIndex[p] = (index[r]);
-                r++;
-                p++;
+                tmpIndex[p] = index[j];
+                tmp[p] = nums[j];
+                j++;
             }
-        }
-        while(l <= mid) {
-            tmp[p] = (nums[l]);
-            tmpIndex[p] = (index[l]); // 记录原始索引位置
-            ans[index[l]]+=(r - mid - 1); // 归并更新结果
-            l++;
             p++;
         }
-        while(r <= right) {
-            tmp[p] = (nums[r]);
-            tmpIndex[p] = (index[r]); // 记录原始索引位置
-            r++;
+        while (i <= mid) {
+            tmpIndex[p] = index[i];
+            tmp[p++] = nums[i++];
+        }
+        while (j <= right) {
+            tmpIndex[p] = index[j];
+            tmp[p++] = nums[j++];
+        }
+        p = 0;
+        // update to the origin array
+        for (int k = left; k <= right; k++) {
+            nums[k] = tmp[p];
+            index[k] = tmpIndex[p];
             p++;
         }
-        for (int i = 0; i < tmp.size(); i++) {
-            nums[i + left] = tmp[i];
-            index[i + left] = tmpIndex[i];
-        }
+     
     }
-    void mergeSort(vector<int>& nums, int left, int right) {
+    void mergeSort(vector<int>& nums,int left, int right) {
         if (left >= right) return;
-        int mid = left + (right - left )/ 2;
+        int mid = (left + right) >> 1;
         mergeSort(nums, left, mid);
         mergeSort(nums, mid + 1, right);
         merge(nums, left, mid, right);
     }
     vector<int> countSmaller(vector<int>& nums) {
-        // 初始化索引
         for (int i = 0; i < nums.size(); i++) {
+            // init index
             index.push_back(i);
         }
-        ans.resize(nums.size());
+         ans.resize(nums.size());
         mergeSort(nums, 0, nums.size() - 1);
         return ans;
     }
@@ -1211,7 +1212,7 @@ public:
         bool operator () (const int & a, const int & b) {
             string _a = to_string(a);
             string _b = to_string(b);
-            return _a + _b < _b + _a;
+            return _a + _b < _b + _a; // 注意此处的写法，只能先a后b，否则就成了降序排序了
         }
     };
     string minNumber(vector<int>& nums) {
@@ -1595,6 +1596,9 @@ public:
             int balance = 0; // small堆元素数目与large堆元素个数差值的增量
             int left = nums[i - k];
             mp[left]++;
+            // 注意: 
+            //   下面两个过程中balance变化是相反的
+            //
             // 要删除的值在small堆
             if (!small.empty() && left <= small.top()) {
                 balance--; // -1 剔除待删值的影响
