@@ -505,10 +505,49 @@ public:
 };
 ```
 - **快速排序的改进： 快速选择**
-  - 时间复杂度O(N)
+  - **时间复杂度O(N)**
   - 只关注于找到比当前划分点小于/等于的元素。
   - **并在目标范围内进行递归，不会同时左右都递归**，大幅降低时间复杂度
     - **每次都判断第k个元素的区间位置(从小到大的第k个)**
+- 快排写法优化： 更简单， 更清楚
+    - 直接在原来的快排上添加判断即可，旧版代码可以忽略
+```c++
+class Solution {
+public:
+    int randomPar(vector<int>& arr, int left, int right) {
+        int index = rand() % (right - left + 1) + left;
+        swap(arr[left], arr[index]);
+        return partition(arr, left, right);
+    }
+    int partition(vector<int>& arr, int left, int right) {
+        int start = left;
+        int pivot = arr[start];
+        while (left < right) {
+            while (left < right && arr[right] >= pivot) right--;
+            while (left < right && arr[left] <= pivot) left++;
+            swap(arr[left], arr[right]);
+        }
+        swap(arr[left], arr[start]);
+        return left;
+    }
+    void quickSort(vector<int>& arr, int left, int right, int k) {
+        if (left >= right) return;
+        int p = randomPar(arr, left, right);
+        if (p == k - 1) return;
+        if (p < k - 1) quickSort(arr, p + 1, right, k);
+        else quickSort(arr, left, p - 1, k);
+    }
+    vector<int> getLeastNumbers(vector<int>& arr, int k) {
+        quickSort(arr, 0, arr.size() - 1, k);
+        vector<int> ans(k);
+        for (int i = 0; i < k; i++) {
+            ans[i] = arr[i];
+        }
+        return ans;
+    }
+};
+```
+- 旧版写法
 ```c++
 class Solution {
 public:
@@ -550,8 +589,6 @@ public:
     }
 };
 ```
-
-
 
 
 
@@ -621,6 +658,32 @@ public:
         quickSort(nums, 0, nums.size() - 1, k, ans);
         return ans.back();
        
+    }
+};
+```
+- **快排代码优化** ！！！
+  - 简化了判断条件，直接在默认快排实现方式上，添加一组判断逻辑
+```c++
+class Solution {
+public:
+    int partition(vector<int>& nums, int left, int right) {
+        int start = left;
+        int pivot = nums[start];
+        while (left < right) {
+            while (left < right && nums[right] <= pivot) right--;
+            while (left < right && nums[left] >= pivot) left++;
+            swap(nums[left], nums[right]);
+        }
+        swap(nums[start], nums[left]);
+        return left;
+    }
+    int quickSort(vector<int>& nums, int left, int right, int k) {
+        int p = partition(nums, left, right);
+        if (p == k - 1) return nums[p];
+        return p < k - 1 ? quickSort(nums, p + 1, right,  k) :  quickSort(nums, left, p - 1,  k); 
+    }
+    int findKthLargest(vector<int>& nums, int k) {
+        return quickSort(nums, 0, nums.size() - 1,  k);
     }
 };
 ```

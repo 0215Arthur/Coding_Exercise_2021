@@ -705,7 +705,7 @@ public:
 - 单调栈 https://blog.csdn.net/lucky52529/article/details/89155694
 - 从栈底到栈顶数据单调递增或递减。
 - 逻辑模板：以单调递减栈为例
-```
+```c++
 stack<int> st
 for (visit list) {
     if (st空 ｜｜st.top >= 当前元素) 
