@@ -9,6 +9,7 @@
   - [622. 设计循环队列 [Medium]*](#622-设计循环队列-medium)
   - [200. 岛屿数量 [Medium]](#200-岛屿数量-medium)
   - [695. 岛屿的最大面积](#695-岛屿的最大面积)
+  - [1254. 统计封闭岛屿的数目](#1254-统计封闭岛屿的数目)
   - [752. 打开转盘锁 [Medium]](#752-打开转盘锁-medium)
   - [279. 完全平方数 [Medium]](#279-完全平方数-medium)
     - [BFS套模板](#bfs套模板)
@@ -308,6 +309,61 @@ public:
     }
 };
 ```
+
+### 1254. 统计封闭岛屿的数目
+> 二维矩阵 grid ，每个位置要么是陆地（记号为 0 ）要么是水域（记号为 1 ）。
+> 一座岛屿 完全 由水域包围，即陆地边缘上下左右所有相邻区域都是水域，那么我们将其称为 「封闭岛屿」
+> 请返回封闭岛屿的数目
+
+- 注意题目条件： 相邻区域均为水域即1，才构成。
+  - 因此矩阵的边界行/列不能出现在当前搜索的0区域中
+- 基于dfs进行搜索判断，
+  - 对于边界添加额外处理，判断是否搜到了行/列的边界
+```c++
+class Solution {
+public:
+    vector<vector<int>> visited;
+    int direct[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+    void dfs(vector<vector<int>>& grid, int row, int col, bool& flag) {
+        for (int i = 0; i < 4; i++) {
+            int _row = row + direct[i][0];
+            int _col = col + direct[i][1];
+            if (_row >= 0 && _row < grid.size() && 
+                _col >= 0 && _col < grid[0].size() &&
+                visited[_row][_col] == 0 && grid[_row][_col] == 0) {
+                    visited[_row][_col] = 1;
+                    // 边界条件判断
+                    if (_col == 0 || _row == 0 || _col == grid[0].size() - 1|| _row == grid.size() - 1) {
+                        flag = false;
+                    }
+                    dfs(grid, _row, _col, flag);
+            }
+        }
+        
+    }
+    int closedIsland(vector<vector<int>>& grid) {
+        int rows = grid.size();
+        int cols = grid[0].size();
+        int ans = 0;
+        visited.assign(grid.begin(), grid.end());
+        for (int i = 1; i < rows - 1; i++) {
+            for (int j = 1; j < cols -1; j++) {
+                if (grid[i][j] == 0 && visited[i][j] == 0) {
+                    //cout << i << " " << j << endl;
+                    visited[i][j] = 1;
+                    bool flag = true;
+                    dfs(grid, i, j, flag);
+                    //cout << flag << endl;
+                    if (flag) ans++;
+
+                }
+            }
+        }
+        return ans;
+    }
+};
+```
+
 ### 752. 打开转盘锁 [Medium]
 - 加了访问限制的遍历问题，求最小步数
 - 使用BFS遍历解题，需要利用哈希表存储限制节点和已访问节点
