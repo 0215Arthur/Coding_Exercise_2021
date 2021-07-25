@@ -476,7 +476,8 @@ public:
 - 通过位运算来统计1的个数，通过与&运算来统计每个位数是否为1
     - 时间复杂度分析： 位数有32的限制，因此时间复杂度在O(1)
 
-```class Solution {
+```c++
+class Solution {
 public:
     int hammingWeight(uint32_t n) {
         int count=0;
