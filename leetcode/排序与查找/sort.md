@@ -376,6 +376,40 @@ void heapSort(vector<int>& arr) {
     }
 }
 ```
+- **建堆时间复杂度 O(N)**; 调整堆的时间复杂度为O(logN); 总体排序时间复杂度为O(N)
+  - 非递归方式实现建堆
+  - 建堆复杂度证明：
+
+> 假如有N个节点， 那么高度为`H=LogN + 1`
+> **最后一层每个父节点最多只需要下调一次， 倒数第二层最多需要下调2次，顶点最多需要下调H次**
+> 最后一层父节点有`2^(H-1)`个， 而顶点只有一个
+> 总体的时间复杂度计算为： S = 1 * 2^(H-1) + 2 * 2^(H-2) + ... + H * 2^0
+> 根据等比数列求和公式：  `S = 2^(H+1) - 2 - H`
+> `H = logN + 1` 则 `S = 2 * N - 2 - logN` 
+> **那么就是`O(N)`的时间复杂度**
+```c++
+void adjustHeap(vector<int>& nums, int index) {
+    int left;
+    int right;
+    int maxIndex;
+    int n = nums.size();
+    while (true) {
+        left = 2 * index + 1;
+        right = 2 * index + 2;
+        maxIndex = index;
+        if (left < n && nums[left] > nums[index]) maxIndex = left;
+        if (right < n && nums[right] > nums[index]) maxIndex = right;
+        if (maxIndex != index) {
+            swap(nums[index], nums[maxIndex]);
+            index = maxIndex;
+        }
+        else {
+            break;
+        }
+    }
+}
+```
+
 - **基于优先队列**实现的堆排序
 - STL 的**priority_queue**更方便，优先队列的底层就是一个堆结构，在优先队列中，队首元素一定是当前队列中优先级最高的那一个。
 - 通过 top() 函数来访问队首元素（也可称为堆顶元素），也就是优先级最高的元素。
