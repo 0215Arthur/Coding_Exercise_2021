@@ -388,26 +388,36 @@ void heapSort(vector<int>& arr) {
 > `H = logN + 1` 则 `S = 2 * N - 2 - logN` 
 > **那么就是`O(N)`的时间复杂度**
 ```c++
-void adjustHeap(vector<int>& nums, int index) {
-    int left;
-    int right;
-    int maxIndex;
-    int n = nums.size();
-    while (true) {
-        left = 2 * index + 1;
-        right = 2 * index + 2;
-        maxIndex = index;
-        if (left < n && nums[left] > nums[index]) maxIndex = left;
-        if (right < n && nums[right] > nums[index]) maxIndex = right;
-        if (maxIndex != index) {
-            swap(nums[index], nums[maxIndex]);
-            index = maxIndex;
-        }
-        else {
-            break;
+class Solution {
+public:
+    void adjustHeap(vector<int>& nums, int len, int index) {
+        while (true) {
+            int maxIndex = index;
+            int left = index * 2 + 1;
+            int right = index * 2 + 2;
+            if (left < len && nums[left] > nums[maxIndex] ) maxIndex = left; // 注意比较的细节 把最大的换上去
+            if (right < len && nums[right] > nums[maxIndex]) maxIndex = right; // 
+            if (maxIndex != index) {
+                swap(nums[index], nums[maxIndex]);
+                index = maxIndex;
+            }
+            else {
+                break;
+            }
         }
     }
-}
+    vector<int> sortArray(vector<int>& nums) {
+        int n = nums.size();
+        for (int i = n / 2 - 1; i >= 0; i--) {
+            adjustHeap(nums, n, i);
+        }
+        for (int i = n - 1; i > 0; i--) {
+            swap(nums[i], nums[0]);
+            adjustHeap(nums, i, 0);
+        }
+        return nums;
+    }
+};
 ```
 
 - **基于优先队列**实现的堆排序
