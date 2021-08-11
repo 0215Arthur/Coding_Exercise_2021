@@ -10,6 +10,7 @@
   - [200. 岛屿数量 [Medium]](#200-岛屿数量-medium)
   - [695. 岛屿的最大面积](#695-岛屿的最大面积)
   - [1254. 统计封闭岛屿的数目](#1254-统计封闭岛屿的数目)
+  - [934. 最短的桥](#934-最短的桥)
   - [752. 打开转盘锁 [Medium]](#752-打开转盘锁-medium)
   - [279. 完全平方数 [Medium]](#279-完全平方数-medium)
     - [BFS套模板](#bfs套模板)
@@ -364,12 +365,116 @@ public:
 };
 ```
 
+### 934. 最短的桥
+> 在给定的二维二进制数组 A 中，存在两座岛。（岛是由四面相连的 1 形成的一个最大组。）
+现在，我们可以将 0 变为 1，以使两座岛连接起来，变成一座岛。
+返回必须翻转的 0 的最小数目。（可以保证答案至少是 1 。）
+
+- 问题分析： 二维数组中有两个岛
+  - 首先要确定两个岛的分布， 即区分开两个岛
+  - 然后基于bfs从其中一个岛向外进行搜索，当遇到另一个岛时即可停止搜索
+    - 此时的搜索步数即为最小数目/最短长度
+
+- 因此总体分为两块：
+  - **dfs： 快速找到两个岛， 并赋予不同的标记值**
+  - **然后进行bfs： 从标记值为2的点开始搜索， 搜索到3的点停止即可**
+- 需要注意的是：可以根据两个岛的大小确定开始搜索的岛
+  - 选择小岛向大岛进行bfs搜索，速度更快
+- 时间复杂度 O(M*N) 
+
+
+
+```c++
+class Solution {
+public:
+    int dir[4][2] = {{1,0}, {-1, 0}, {0, 1}, {0, -1}};
+    int dfs(vector<vector<int>>& grid, int row, int col, int round) {
+        grid[row][col] = round;
+        int cnt = 1;
+        for (int i = 0; i < 4; i++) {
+            int _row = row + dir[i][0];
+            int _col = col + dir[i][1];
+            if (_row >= 0 && _row < grid.size() && _col >= 0 && _col < grid[0].size() && grid[_row][_col] == 1) {
+                cnt += dfs(grid, _row, _col, round);
+            }
+        }
+        return cnt;
+    }
+    int bfs (vector<vector<int>>& grid, int round) {
+        int target = (round - 2 + 1) % 2 + 2;
+        //cout << "target" << target << " round:" << round << endl;
+        int rows = grid.size();
+        int cols = grid[0].size();
+        queue<pair<int,int>> q;
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                if (grid[i][j] == round) {
+                    q.push({i,j});
+                }
+            }
+        }
+        int ans = 0;
+        while (!q.empty()) {
+            ans++;
+            int sz = q.size();
+            for (int i = 0; i < sz; i++) {
+                pair<int,int> cur = q.front();
+                //cout << cur.first << " " << cur.second << endl;
+                q.pop();
+                for (int k = 0; k < 4; k++) {
+                    int _row = cur.first + dir[k][0];
+                    int _col = cur.second + dir[k][1];
+                    if (_row >= 0 && _row < rows && _col >= 0 && _col < cols) {
+                        if (grid[_row][_col] == target) {
+                            return ans;
+                        }
+                        if (grid[_row][_col] == 0) {
+                            q.push({_row, _col});
+                            grid[_row][_col] = 4;
+                        }
+                    }
+                }
+            }
+        }
+        return ans;
+    }
+    int shortestBridge(vector<vector<int>>& grid) {
+        int rows = grid.size();
+        int cols = grid[0].size();
+        int round = 2;
+        int n1 = 0;
+        int n2 = 0;
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                if (grid[i][j] == 1) {
+                    if (round == 2) {
+                        n1 = dfs(grid, i, j, round);
+                        round++;
+                    }
+                    else {
+                        n2 = dfs(grid, i, j, round);
+                    }
+                }
+            }
+        }
+        //cout << n1 << " " << n2 << endl;
+        if (n1 < n2) {
+            return bfs(grid, round - 1) - 1;
+        }
+        else {
+            return bfs(grid, round) - 1;
+        }
+    }
+};
+```
+
 ### 752. 打开转盘锁 [Medium]
 - 加了访问限制的遍历问题，求最小步数
 - 使用BFS遍历解题，需要利用哈希表存储限制节点和已访问节点
 - 时间复杂度： O($N^2*A^N+D$), 空间复杂度： O($A^N+D$) A为10 数字数量；N为状态位数；D为限制状态的数量
 
-```class Solution {
+```c++
+class Solution {
 public:
     bool find_dead(vector<string>& deadends, string target) {
         vector<string>::iterator iter=find(deadends.begin(),deadends.end(),"0000");
