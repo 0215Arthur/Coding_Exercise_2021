@@ -49,6 +49,8 @@
   - [542. 01矩阵 [Matrix] **](#542-01矩阵-matrix-)
   - [547. 省份数量](#547-省份数量)
   - [841. 钥匙和房间](#841-钥匙和房间)
+  - [787. K站中转内最便宜的航班](#787-k站中转内最便宜的航班)
+  - [797. 所有可能的路径](#797-所有可能的路径)
 - [小结](#小结)
 ## 队列
 ### 基础知识
@@ -2020,6 +2022,113 @@ public:
     }
 };
 
+```
+
+
+### 787. K站中转内最便宜的航班
+> 有 n 个城市通过一些航班连接。给你一个数组 flights ，其中 flights[i] = [fromi, toi, pricei] ，表示该航班都从城市 fromi 开始，以价格 pricei 抵达 toi。
+现在给定所有的城市和航班，以及出发城市 src 和目的地 dst，你的任务是找到出一条最多经过 k 站中转的路线，使得从 src 到 dst 的 价格最便宜 ，并返回该价格。 如果不存在这样的路线，则输出 -1。
+
+- 典型的图搜索问题， 可以通过dfs或者bfs实现完成
+- 其中约束条件是最多k站中转， 找最小值
+  - 最简单的做法就是利用bfs， 基于队列进行搜索
+  - 由于涉及到不同路线的价格问题， 使用辅助数组存储到达当前站的路线中最低的价格
+  - 每次搜索时 只有出现更低的到达价格才会入队，进行后续遍历
+- 注意：使用`vector<pair<int,int>>`的形式进行存储， 更加方便
+- 时间复杂度 O(k*n)
+
+
+
+```c++
+class Solution {
+public:
+    int findCheapestPrice(int n, vector<vector<int>>& flights, int src, int dst, int k) {
+        queue<pair<int, int>> q;
+        q.push({src, 0});
+        vector<vector<pair<int,int>>> grids(n);
+        for (auto & p : flights) {
+            grids[p[0]].push_back({p[1],p[2]});
+        }
+        
+        vector<int> path(n, INT_MAX);
+        //vis[src] = 1;
+        path[src] = 0;
+        while (!q.empty() && k >= 0) {
+            int sz = q.size();
+            for (int i = 0; i < sz; i++) {
+                auto [ls, lp] = q.front();
+                q.pop();
+                for (auto& [s, p] : grids[ls]) {
+                    if (p + lp < path[s]) {
+                        q.push({s, p + lp});
+                        path[s] = p + lp;
+                    }
+                }
+            }
+            k--;
+        }
+        return path[dst] == INT_MAX ? -1 : path[dst];
+    }
+};
+```
+- 动态规划做法：
+  - 定义`dp[i][k]` 表示经过k个中转站到达i站的最小花费
+  - 那么与上面的bfs做法一致，更新状态的过程为`dp[i][k] = min(dp[i][k], dp[last][k-1] + cur_price)`
+  - 而在初始化上面， 需要将起始位置的dp全设为0， 而其他位置上为`INT_MAX`; `dp[src][k] = 0`
+- 定义为： `dp[n][k+2]` 
+
+
+```c++
+class Solution {
+public:
+    int findCheapestPrice(int n, vector<vector<int>>& flights, int src, int dst, int k) {
+        vector<vector<int>> dp(n, vector<int>(k + 2, INT_MAX));
+        for (int i = 0; i < k + 2; i++) {
+            dp[src][i] = 0;
+        }
+        for (int i = 1; i < k + 2; i++) {
+            for (auto& p : flights) {
+                if (dp[p[0]][i-1] != INT_MAX) {
+                    dp[p[1]][i] = min(dp[p[1]][i], dp[p[0]][i-1] + p[2]);
+                }
+            }
+        }
+        return dp[dst][k + 1] == INT_MAX ? -1 : dp[dst][k+1];
+    }
+};
+```
+
+### 797. 所有可能的路径
+> 给你一个有 n 个节点的 有向无环图（DAG），请你找出所有从节点 0 到节点 n-1 的路径并输出（不要求按特定顺序）
+
+- 确定了起点和终点， 直接采用dfs/bfs从头搜索即可， 搜到终点的情况下，将路径进行保存即可。
+
+```c++
+class Solution {
+public:
+    vector<vector<int>> ans;
+    void dfs(vector<vector<int>>& graph, int cur, int target, vector<int>& path) {
+        if (cur == target) {
+            ans.push_back(path);
+            return;
+        }
+        
+        if (graph[cur].size() < 1) {
+            return;
+        }
+        for (auto i : graph[cur]) {
+            path.push_back(i);
+            dfs(graph, i, target, path);
+            path.pop_back();
+        }
+    }
+    vector<vector<int>> allPathsSourceTarget(vector<vector<int>>& graph) {
+        vector<int> path;
+        path.push_back(0);
+        dfs(graph, 0, graph.size() - 1, path);
+        return ans;
+    }
+};
 ```
 
 
