@@ -470,11 +470,12 @@ public:
                 l_min = intervals[i][0];
             }
             else {
+                // 取最大值  代码的灵魂
                 // 取当前对比的最大值
                 r_max = max(intervals[i][1], r_max);
             }
         }
-        ans.push_back(vector<int>{l_min, r_max});
+        ans.push_back(vector<int>{l_min, r_max}); // 注意最后补上
         return ans;
     }
 };
@@ -553,6 +554,8 @@ public:
   - 只关注于找到比当前划分点小于/等于的元素。
   - **并在目标范围内进行递归，不会同时左右都递归**，大幅降低时间复杂度
     - **每次都判断第k个元素的区间位置(从小到大的第k个)**
+  - 空间复杂度 O(logN)期望空间复杂度
+    - 最差情况下为O(N)，即每次划分都为最小值/最大值
 - 快排写法优化： 更简单， 更清楚
     - 直接在原来的快排上添加判断即可，旧版代码可以忽略
 ```c++
@@ -577,6 +580,7 @@ public:
     void quickSort(vector<int>& arr, int left, int right, int k) {
         if (left >= right) return;
         int p = randomPar(arr, left, right);
+        // 注意判断的是k-1，而非k
         if (p == k - 1) return;
         if (p < k - 1) quickSort(arr, p + 1, right, k);
         else quickSort(arr, left, p - 1, k);
@@ -903,12 +907,13 @@ public:
 ```
 - 迭代方式实现
 - 注意点： 入栈顺序从大到小，而且要注意外层遍历的范围:`min(0,n)`
-```
+```c++
 class Solution {
 public:
     vector<int> ans;
     vector<int> lexicalOrder(int n) {
         stack<int> st;
+        // 临界情况： 考虑数字小于10的情况
         for(int i = min(9,n); i >= 1; i--) {
             st.push(i);
         }
@@ -917,6 +922,8 @@ public:
             st.pop();
             ans.push_back(cur);
             for (int i = 9; i >=0; i--) {
+                // 注意判断的位置
+                // 以及遍历的顺序
                 if (cur*10 + i <= n) 
                     st.push(cur*10 + i);
             }
@@ -985,12 +992,12 @@ public:
             int count = getCount(prefix, n);
             // 确定搜索区间
             if (p + count > k) {
-                prefix *= 10;
+                prefix *= 10; // *10 则是在当前前缀的背景继续向下搜索， 所以是数量是连续的，只用+1即可
                 p++; // 关键细节
             }
             else {
                 prefix++;
-                p += count;
+                p += count; // prefix++ 相当于直接跳过了一段数据
             }
         }
         return prefix;
