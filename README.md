@@ -2,6 +2,14 @@
  Program and Coding exercises for interview :blush: :sunny:
 
 ...
+## Update Logs
+### 2021/12/08
+- Add yuque link
+  - 面试智力题完整汇总：https://www.yuque.com/docs/share/69be45e0-1740-4dd0-9aed-918b51ceabb0?# 《智力与概率题汇总》
+  - **欢迎star**
+- 秋招面试结束于2021.10月
+  - 求职岗位:算法工程师
+  - 面试面经后续更新...
 ## ⛽️ 面试编程题目整理
 注： 题目主要来源于Leetcode、 《剑指offer》 与《程序员面试金典》；  
 少部分补充题来自于面经收集， 企业题库： https://codetop.cc/#/home
